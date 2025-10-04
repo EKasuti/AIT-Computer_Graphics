@@ -1,0 +1,17 @@
+{
+  "version": "9",
+  "items": {
+    "ba79fb8425dcf7a6abf489d51ea0a9dc": {
+      "src": "/Users/emmanuelmakau/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-js/2.2.0/aae464008a2ba153ec501ccb6d23b7c61c497c88/kotlin-stdlib-js-2.2.0.klib"
+    },
+    "5f1dda5ef43cd29179d0b513345005cf": {
+      "src": "/Users/emmanuelmakau/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlinx/kotlinx-serialization-json-js/1.6.2/c0f0707839e391ab39f021fea5a2af045c29f147/kotlinx-serialization-json-js-1.6.2.klib"
+    },
+    "aabd2f46fead63ab3b52bd090077097e": {
+      "src": "/Users/emmanuelmakau/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlinx/kotlinx-serialization-core-js/1.6.2/27bceec3b89d0eec8f951f8b25f16fffa0df214e/kotlinx-serialization-core-js-1.6.2.klib"
+    },
+    "cda70c29b617323d7eeefc54c4e65ea6": {
+      "src": "/Users/emmanuelmakau/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-dom-api-compat/2.2.0/14f9aba1d99f0d17e81b6a7b82da446650456dea/kotlin-dom-api-compat-2.2.0.klib"
+    }
+  }
+}

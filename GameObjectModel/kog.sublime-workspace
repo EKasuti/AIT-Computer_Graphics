@@ -1,0 +1,247 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"avat",
+				"avatarRotation"
+			],
+			[
+				"sc",
+				"screenY"
+			]
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "Gradle",
+	"build_system_choices":
+	[
+		[
+			[
+				[
+					"Gradle",
+					""
+				],
+				[
+					"Packages/Kotlin/Kotlin.sublime-build",
+					""
+				],
+				[
+					"Packages/Kotlin/Kotlin.sublime-build",
+					"Compile"
+				],
+				[
+					"Packages/Kotlin/Kotlin.sublime-build",
+					"Compile + run"
+				],
+				[
+					"Packages/Kotlin/Kotlin.sublime-build",
+					"Run"
+				]
+			],
+			[
+				"Gradle",
+				""
+			]
+		]
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"Package Control: install",
+				"Package Control: Install Package"
+			],
+			[
+				"Package Control: ins",
+				"Package Control: Install Package"
+			],
+			[
+				"Package Control: kotlin",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+	],
+	"file_history":
+	[
+		"/D/University/AIT/2025Fall/5_2DGameObject/initial/kog.2dgameobject-2025-09-26-initial/client/src/main/glsl/idle-vs.glsl",
+		"/D/University/AIT/2025Fall/5_2DGameObject/initial/kog.2dgameobject-2025-09-26-initial/client/src/main/glsl/striped-fs.glsl",
+		"/D/University/AIT/2025Fall/5_2DGameObject/initial/kog.2dgameobject-2025-09-26-initial/client/src/main/kotlin/Scene.kt",
+		"/D/University/AIT/2025Fall/5_2DGameObject/initial/kog.2dgameobject-2025-09-26-initial/client/src/main/kotlin/Program.kt",
+		"/D/University/AIT/2025Fall/5_2DGameObject/initial/kog.2dgameobject-2025-09-26-initial/client/src/main/kotlin/OrthoCamera.kt",
+		"/D/University/AIT/2025Fall/5_2DGameObject/initial/kog.2dgameobject-2025-09-26-initial/client/src/main/kotlin/QuadGeometry.kt",
+		"/D/University/AIT/2025Fall/5_2DGameObject/initial/kog.2dgameobject-2025-09-26-initial/client/src/main/kotlin/TriangleGeometry.kt",
+		"/D/University/AIT/2025Fall/4_2DCamera/init/kog.2dcam-2025-09-19-initial/client/src/main/kotlin/Scene.kt",
+		"/D/University/AIT/2025Fall/2_Shapes/run/kog.shapes-2025-09-10/client/src/main/glsl/striped-fs.glsl",
+		"/D/University/AIT/2025Fall/2_Shapes/run/kog.shapes-2025-09-10/client/src/main/kotlin/QuadGeometry.kt",
+		"/D/University/AIT/2025Fall/2_Shapes/run/kog.shapes-2025-09-10/client/src/main/glsl/solid-fs.glsl",
+		"/D/University/AIT/2025Fall/2_Shapes/run/kog.shapes-2025-09-10/client/src/main/glsl/idle-vs.glsl",
+		"/D/University/AIT/2025Fall/2_Shapes/run/kog.shapes-2025-09-10/client/src/main/kotlin/TriangleGeometry.kt",
+		"/D/University/AIT/2025Fall/2_Shapes/run/kog.shapes-2025-09-10/client/src/main/kotlin/Scene.kt",
+		"/D/University/AIT/2025Fall/2_Shapes/run/kog.shapes-2025-09-10/client/src/main/kotlin/App.kt",
+		"/D/University/AIT/2025Fall/2_Shapes/initial/kog.shapes-2025-09-10/client/src/main/kotlin/QuadGeometry.kt",
+		"/D/University/AIT/2025Fall/2_Shapes/initial/kog.shapes-2025-09-10/client/src/main/kotlin/TriangleGeometry.kt",
+		"/D/University/AIT/2025Fall/2_Shapes/initial/kog.shapes-2025-09-10/client/src/main/glsl/idle-vs.glsl",
+		"/D/University/AIT/2025Fall/2_Shapes/initial/kog.shapes-2025-09-10/client/src/main/glsl/solid-fs.glsl",
+		"/D/University/AIT/2025Fall/2_Shapes/initial/kog.shapes-2025-09-10/client/src/main/kotlin/Program.kt",
+		"/D/University/AIT/2025Fall/2_Shapes/initial/kog.shapes-2025-09-10/client/src/main/kotlin/Scene.kt",
+		"/D/University/AIT/2025Fall/2_Shapes/initial/kog.shapes-2025-09-10/client/src/main/kotlin/App.kt",
+		"/D/University/AIT/2024Fall/Lab01/kog.systemtest-gradle-8.5-2024-02-04/kog.systemtest-gradle-8.5-2024-02-04/client/src/main/kotlin/Scene.kt"
+	],
+	"find":
+	{
+		"height": 28.0
+	},
+	"find_in_files":
+	{
+		"height": 107.2,
+		"where_history":
+		[
+			""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"imatrix",
+			"punyland"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"scrollbar_highlights": true,
+		"show_context": true,
+		"use_buffer2": true,
+		"use_gitignore": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 28.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 323.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "kog.sublime-project",
+	"replace":
+	{
+		"height": 52.8
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 221.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

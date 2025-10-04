@@ -1,0 +1,12 @@
+abi_version=2.2.0
+builtins_platform=JS
+compiler_version=2.2.0
+depends=org.jetbrains.kotlinx\:kotlinx-serialization-json org.jetbrains.kotlinx\:kotlinx-serialization-core org.jetbrains.kotlin\:kotlin-dom-api-compat kotlin
+ir_signature_versions=1,2
+jsOutputName=kog-client
+language_features=+JsAllowValueClassesInExternals +MultiPlatformProjects
+metadata_version=1.4.1
+serializedIrFileFingerprints=1b76exun09bmh.39l10ln9gq3hl 332gn18c05rjj.qvn9yhje2lpx 1q7h1dry5nnh4.1x5fqsm164dxm rgqsecx5h9zh.2tswayd9yqb48 eun12tvw9w71.1cn3r7ku5iiu3 rnaa01zoijeo.3veknhqm3rrop 3ctxcxlusc3bn.gefd5uj41ajs 10ahelcx8w221.19q07b73g7pqi 17ejotcq0a9nd.3upxu4rqnprtv 2nzm0ok4ipu46.ohnw7pkfrke7 3d3rpebhn3kl9.qfw3xa2b0c2d 3ii6zxgzwxti8.1jsd8la4fvzwi 20vjudp5b8yuo.2wwj4yj9u66cd 1f23q59lufix7.iqm5zknci038 2v4wncu4h26ne.3axj0gljg2ix9 172v8752hzcjt.1bupfpd0xway1 3dfdzf3ynxw8f.2w1x4guqjn49s 27s2nu2td70ck.2n0g67j1ly0uy 16rmax8mzmrgt.q2qxrz6opmwz 32pzi7e0c2nj2.2afs44748kgjv 291hlm5u8sr6b.w5eo8w2b5oxz 3ne6vqponfme9.3slwekrpd573m 3lixdswjl9m3u.3tgqrwzx6k532 mezou4snemhz.2b8wfynb1w431 3t32k8n3olae3.2ehroc6k3c6sq tmeu43wraphz.z6omrqcliotd 4wv4il6i53ju.3k2mpslznf4jq 29clsevowrzmu.vcl5u8dvv09l 1yoy791upzwyj.2zebyvz0f9k1e kbs8771cnarr.26pj4ywiv6n1 33wem2xbn6fp9.1doqm0fvg67z8 2jtxnrm7xd1be.292i6n9qq8gz5 34xtiyndc8ui9.cvc9nlgkuuzo 16fp10dgn1o48.1zz1bncxwhqfn 17apitm3yak54.1q19g5i53ueir 9msbcv2ppldl.1nn4joybygkn0 5lvcgj2q7g2u.277zb3u43dp2p
+serializedKlibFingerprint=1jf4acm1j8uv.1w7j76d917zxv
+unique_name=vision.gears\:client
+wasm_targets=wasm-js

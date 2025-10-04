@@ -1,0 +1,15 @@
+{
+  "name": "kog",
+  "version": "1.0",
+  "private": true,
+  "workspaces": [
+    "packages/kog-client",
+    "packages/kog-client-test"
+  ],
+  "devDependencies": {},
+  "dependencies": {},
+  "peerDependencies": {},
+  "optionalDependencies": {},
+  "bundledDependencies": [],
+  "resolutions": {}
+}
