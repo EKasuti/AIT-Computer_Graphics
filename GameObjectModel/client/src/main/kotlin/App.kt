@@ -33,11 +33,11 @@ class App(val canvas : HTMLCanvasElement, val overlay : HTMLDivElement) {
       keysPressed.remove( keyNames[event.keyCode] )
     }
 
-    canvas.onmousedown = { 
-      event : MouseEvent ->
-      // event.x.toInt()
-      // event.y.toInt()
-      console.log("Hello World! " + event.x.toInt() + " " + event.y.toInt())
+    canvas.onmousedown = { event: MouseEvent ->
+      val rect = canvas.getBoundingClientRect()
+      val x = ((event.clientX - rect.left) / canvas.width * 2.0 - 1.0).toFloat()
+      val y = ((rect.bottom - event.clientY) / canvas.height * 2.0 - 1.0).toFloat()
+      scene.pick(x, y)
       event
     }
 
