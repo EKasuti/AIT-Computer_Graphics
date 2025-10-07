@@ -46,11 +46,7 @@ class Scene(
   var zoomLevel = 1.0f
   var lastMousePos: Vec2? = null
   var isPanning = false
-
-  // animation time
-  var t = 0.0f
-
-  // cooldown so A/D hold steps slots at readable pace
+  var t = 0.0f // time
   private var rotateCooldownFrames = 0
 
   fun resize(canvas: HTMLCanvasElement) {
@@ -59,7 +55,6 @@ class Scene(
   }
 
   fun update(keysPressed: Set<String>) {
-    // Camera moves only when nothing is selected (legacy behavior)
     if (selectedTriangles.isEmpty()) {
       if ("W" in keysPressed) camera.position.y += 0.01f
       if ("A" in keysPressed) camera.position.x -= 0.01f
@@ -80,7 +75,7 @@ class Scene(
       }
     }
 
-    // Rotate selected objects among grid slots using A/D (with small cooldown)
+    // Rotate selected objects among grid slots
     if (rotateCooldownFrames > 0) rotateCooldownFrames--
     if (selectedTriangles.isNotEmpty() && rotateCooldownFrames == 0) {
       if ("A" in keysPressed) { // counter-clockwise: TR->TL, TL->BL, BL->TR
