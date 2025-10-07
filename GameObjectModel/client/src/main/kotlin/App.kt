@@ -37,23 +37,35 @@ class App(val canvas : HTMLCanvasElement, val overlay : HTMLDivElement) {
       val rect = canvas.getBoundingClientRect()
       val x = ((event.clientX - rect.left) / canvas.width * 2.0 - 1.0).toFloat()
       val y = ((rect.bottom - event.clientY) / canvas.height * 2.0 - 1.0).toFloat()
-      scene.pick(x, y)
+      if (event.button == 0.toShort()) { // Left-click
+        scene.pick(x, y)
+      } else if (event.button == 1.toShort() || event.button == 2.toShort()) {
+        scene.onMouseDown(event) // middle or right button
+      }
       event
     }
 
-    canvas.onmousemove = { 
-      event : Event ->
+    canvas.onmousemove = { event : MouseEvent ->
+      scene.onMouseMove(event)
       event.stopPropagation()
     }
 
-    canvas.onmouseup = { 
-      event : Event ->
-      event // This line is a placeholder for event handling code. It has no effect, but avoids the "unused parameter" warning.
+    canvas.onmouseup = { event : MouseEvent ->
+      scene.onMouseUp(event)
     }
 
     canvas.onmouseout = { 
       event : Event ->
       event // This line is a placeholder for event handling code. It has no effect, but avoids the "unused parameter" warning.
+    }
+
+    canvas.onwheel = { event: WheelEvent ->
+      scene.onScroll(event.deltaY)
+      event.preventDefault()
+    }
+
+    window.onresize = {
+      resize()
     }
 
     window.requestAnimationFrame {//#requestAnimationFrame# trigger rendering

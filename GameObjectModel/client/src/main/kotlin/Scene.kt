@@ -1,4 +1,6 @@
 import org.w3c.dom.HTMLCanvasElement
+import org.w3c.dom.events.MouseEvent
+import org.w3c.dom.events.WheelEvent
 import org.khronos.webgl.WebGLRenderingContext as GL //# GL# we need this for the constants declared ˙HUN˙ a constansok miatt kell
 import vision.gears.webglmath.*
 
@@ -37,6 +39,8 @@ class Scene (
   var selectedPos: Vec2? = null
   var selectedRotation = 0.0f
   var zoomLevel = 1.0f
+  var lastMousePos: Vec2? = null
+  var isPanning = false
 
   fun resize(canvas : HTMLCanvasElement) {
     gl.viewport(0, 0, canvas.width, canvas.height)//#viewport# tell the rasterizer which part of the canvas to draw to ˙HUN˙ a raszterizáló ide rajzoljon
@@ -146,5 +150,31 @@ class Scene (
     camera.windowSize.y *= factor
     camera.windowSize.x *= factor
     camera.updateViewProjMatrix()
+  }
+
+  // Pan start
+  fun onMouseDown(event: MouseEvent) {
+    isPanning = true
+    lastMousePos = Vec2(event.clientX.toFloat(), event.clientY.toFloat())
+  }
+
+  // Pan move
+  fun onMouseMove(event: MouseEvent) {
+    if (!isPanning) return
+    val current = Vec2(event.clientX.toFloat(), event.clientY.toFloat())
+    val delta = (lastMousePos ?: current) - current
+
+    // Convert screen-space delta to world-space delta
+    val scaleFactor = camera.windowSize.x / 800f
+    camera.position.x += delta.x * scaleFactor
+    camera.position.y -= delta.y * scaleFactor
+    camera.updateViewProjMatrix()
+
+    lastMousePos = current
+  }
+
+  // Pan end
+  fun onMouseUp(event: MouseEvent) {
+    isPanning = false
   }
 }

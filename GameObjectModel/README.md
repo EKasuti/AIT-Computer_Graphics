@@ -6,6 +6,9 @@
 |---------|--------------|
 | **Left Click**    | Select a triangle by clicking near its center. |
 | **Click Outside** | Deselects any selected triangle.               |
+| **Right / Middle Click + Drag** | Pans (moves) the camera view.               |
+| **Mouse Scroll** | Zoom in or out.               |
+
 
 > Selection is highlighted in **yellow** for clarity.
 
