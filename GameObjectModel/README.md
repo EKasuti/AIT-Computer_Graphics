@@ -20,6 +20,7 @@
 | **D** | Move the camera right |
 | **Q** | Roll camera clockwise |
 | **E** | Roll camera counterclockwise |
+| **G** | Arrange objects on a regular grid |
 | **Arrow Keys** | Move the **selected triangle** up / down / left / right |
 
 ---

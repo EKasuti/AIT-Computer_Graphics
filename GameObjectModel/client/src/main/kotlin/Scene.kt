@@ -51,6 +51,7 @@ class Scene (
     if ("D" in keysPressed) camera.position.x += 0.01f
     if ("Q" in keysPressed) camera.roll += 0.01f
     if ("E" in keysPressed) camera.roll -= 0.01f
+    if ("G" in keysPressed) arrangeOnGrid()
 
     // Move only the selected triangle
     selectedPos?.let {
@@ -69,7 +70,7 @@ class Scene (
      // draw all triangles
     gl.useProgram(solidProgram.glProgram)
     for ((mesh, pos) in triangles) {
-      modelmatrix.set().translate(pos.x, pos.y)
+      modelmatrix.set().translate(pos.x, pos.y).scale(0.5f, 0.5f)
       modelmatrix.commit(gl, gl.getUniformLocation(solidProgram.glProgram, "gameObject.modelMatrix")!!)
       camera.viewProjMatrix.commit(gl, gl.getUniformLocation(solidProgram.glProgram, "camera.viewProjMatrix")!!)
       mesh.draw()
@@ -105,6 +106,25 @@ class Scene (
     } else {
       selectedTriangle = null
       selectedPos = null
+    }
+  }
+
+  private fun arrangeOnGrid() {
+    val gridSpacingX = 2f
+    val gridSpacingY = 2f
+
+    val positions = listOf(
+      Vec2(-gridSpacingX / 2,  gridSpacingY / 2), // top-left
+      Vec2( gridSpacingX / 2,  gridSpacingY / 2), // top-right
+      Vec2(-gridSpacingX / 2, -gridSpacingY / 2) // bottom-left
+    )
+
+    for ((i, pair) in triangles.withIndex()) {
+      if (i < positions.size) {
+        val pos = pair.second
+        pos.x = positions[i].x
+        pos.y = positions[i].y
+      }
     }
   }
 }
