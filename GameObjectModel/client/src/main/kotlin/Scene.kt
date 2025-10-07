@@ -39,8 +39,7 @@ class Scene (
     Pair(Mesh(lightBlueMaterial, triangleGeometry), Vec2(1.2f, -0.6f))
   )
 
-  var selectedTriangle: Mesh? = null
-  var selectedPos: Vec2? = null
+  val selectedTriangles = mutableSetOf<Mesh>()
   var selectedRotation = 0.0f
   var zoomLevel = 1.0f
   var lastMousePos: Vec2? = null
@@ -53,39 +52,29 @@ class Scene (
   }
 
   fun update(keysPressed: Set<String>) {
-    if (selectedTriangle == null) {
+    if (selectedTriangles.isEmpty()) {
       if ("W" in keysPressed) camera.position.y += 0.01f
       if ("A" in keysPressed) camera.position.x -= 0.01f
       if ("S" in keysPressed) camera.position.y -= 0.01f
       if ("D" in keysPressed) camera.position.x += 0.01f
     }
 
+    if (selectedTriangles.isNotEmpty()) {
+      val step = 0.02f
+      for ((mesh, pos) in triangles) {
+        if (mesh in selectedTriangles) {
+          if ("UP" in keysPressed) pos.y += step
+          if ("DOWN" in keysPressed) pos.y -= step
+          if ("LEFT" in keysPressed) pos.x -= step
+          if ("RIGHT" in keysPressed) pos.x += step
+        }
+      }
+    }
+
     if ("Q" in keysPressed) camera.roll += 0.01f
     if ("E" in keysPressed) camera.roll -= 0.01f
     if ("G" in keysPressed) arrangeOnGrid()
-
-    // Move only the selected triangle
-    selectedPos?.let {
-      if ("UP" in keysPressed) it.y += 0.02f
-      if ("DOWN" in keysPressed) it.y -= 0.02f
-      if ("LEFT" in keysPressed) it.x -= 0.02f
-      if ("RIGHT" in keysPressed) it.x += 0.02f
-    }
-
-    if (selectedTriangle != null) {
-      if ("A" in keysPressed) selectedRotation += 0.05f
-      if ("D" in keysPressed) selectedRotation -= 0.05f
-    }
-
-    if ("BACK_SPACE" in keysPressed && selectedTriangle != null) {
-      val index = triangles.indexOfFirst { it.first == selectedTriangle }
-      if (index != -1) {
-        triangles.removeAt(index)
-      }
-      selectedTriangle = null
-      selectedPos = null
-      selectedRotation = 0.0f
-    }
+    if ("ESCAPE" in keysPressed) selectedTriangles.clear()
 
     // Zooming
     if ("Z" in keysPressed) zoomLevel *= 1.02f // zoom in
@@ -93,8 +82,8 @@ class Scene (
 
     camera.windowSize.set(2.507389f / zoomLevel, 2.0f / zoomLevel)
 
-    gl.clearColor(1.0f, 0.0f, 0.0f, 1.0f)//## red, green, blue, alpha in [0, 1]
-    gl.clear(GL.COLOR_BUFFER_BIT or GL.DEPTH_BUFFER_BIT)//#or# bitwise OR of flags
+    gl.clearColor(1.0f, 0.0f, 0.0f, 1.0f)
+    gl.clear(GL.COLOR_BUFFER_BIT or GL.DEPTH_BUFFER_BIT)
 
     camera.updateViewProjMatrix()
 
@@ -105,18 +94,19 @@ class Scene (
     for ((mesh, pos) in triangles) {
       modelmatrix.set()
         .translate(pos.x, pos.y)
-        .rotate(if (mesh == selectedTriangle) selectedRotation else 0.0f, 0.0f, 0.0f, 1.0f)
+        .rotate(if (mesh in selectedTriangles) selectedRotation else 0.0f, 0.0f, 0.0f, 1.0f)
         .scale(0.5f, 0.5f)
 
       modelmatrix.commit(gl, gl.getUniformLocation(solidProgram.glProgram, "gameObject.modelMatrix")!!)
       camera.viewProjMatrix.commit(gl, gl.getUniformLocation(solidProgram.glProgram, "camera.viewProjMatrix")!!)
 
-      if (mesh == selectedTriangle)
+      if (mesh in selectedTriangles)
         mesh.using(selectionMaterial)?.draw()
       else
         mesh.draw()
     }
-    
+
+    // moving enemy (heart curve)
     t += 0.02f
 
     val px = heartX(t) * 0.05f
@@ -133,18 +123,18 @@ class Scene (
 
     modelmatrix.commit(gl, gl.getUniformLocation(solidProgram.glProgram, "gameObject.modelMatrix")!!)
     camera.viewProjMatrix.commit(gl, gl.getUniformLocation(solidProgram.glProgram, "camera.viewProjMatrix")!!)
-
+    
     enemyMesh.draw()
   }
 
   // Hear curve parametric equations
   fun heartX(t: Float): Float = 16f * sin(t).pow(3)
   fun heartY(t: Float): Float = 13f * cos(t) - 5f * cos(2f * t) - 2f * cos(3f * t) - cos(4f * t)
-
+  
   fun dHeartX(t: Float): Float = 48f * sin(t).pow(2) * cos(t)
   fun dHeartY(t: Float): Float =-13f * sin(t) + 10f * sin(2f * t) + 6f * sin(3f * t) + 4f * sin(4f * t)
 
-  fun pick(x: Float, y: Float) {
+  fun pick(x: Float, y: Float, event: MouseEvent) {
     val clickPos = Vec2(x, -y)
     val threshold = 1.0f
 
@@ -152,14 +142,18 @@ class Scene (
     val (mesh, pos) = closest
     val dist = (clickPos - pos).length()
 
+    val shiftPressed = event.shiftKey
+
     if (dist < threshold) {
-      selectedTriangle = mesh
-      selectedPos = pos
-      selectedRotation = 0.0f
-    } else {
-      selectedTriangle = null
-      selectedPos = null
-      selectedRotation = 0.0f
+      if (shiftPressed) {
+        if (mesh in selectedTriangles) selectedTriangles.remove(mesh)
+        else selectedTriangles.add(mesh)
+      } else {
+        selectedTriangles.clear()
+        selectedTriangles.add(mesh)
+      }
+    } else if (!shiftPressed) {
+      selectedTriangles.clear()
     }
   }
 
@@ -172,8 +166,7 @@ class Scene (
     )
     for ((i, pair) in triangles.withIndex()) {
       if (i < positions.size) {
-        val pos = pair.second
-        pos.set(positions[i])
+        pair.second.set(positions[i])
       }
     }
   }

@@ -38,7 +38,7 @@ class App(val canvas : HTMLCanvasElement, val overlay : HTMLDivElement) {
       val x = ((event.clientX - rect.left) / canvas.width * 2.0 - 1.0).toFloat()
       val y = ((rect.bottom - event.clientY) / canvas.height * 2.0 - 1.0).toFloat()
       if (event.button == 0.toShort()) { // Left-click
-        scene.pick(x, y)
+        scene.pick(x, y, event)
       } else if (event.button == 1.toShort() || event.button == 2.toShort()) {
         scene.onMouseDown(event) // middle or right button
       }
