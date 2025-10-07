@@ -5,53 +5,61 @@ import org.khronos.webgl.WebGLRenderingContext as GL //# GL# we need this for th
 import vision.gears.webglmath.*
 import kotlin.math.*
 
-class Scene (
-  val gl : WebGL2RenderingContext){
+class Scene(
+  val gl: WebGL2RenderingContext
+) {
 
   val camera = OrthoCamera()
-  var modelmatrix = Mat4 ()
+  var modelmatrix = Mat4()
 
   val vsIdle = Shader(gl, GL.VERTEX_SHADER, "idle-vs.glsl")
   val fsSolid = Shader(gl, GL.FRAGMENT_SHADER, "solid-fs.glsl")
   val solidProgram = Program(gl, vsIdle, fsSolid, Program.PC)
   val triangleGeometry = TriangleGeometry(gl)
 
-  val blueMaterial = Material(solidProgram).apply{
+  val blueMaterial = Material(solidProgram).apply {
     this["color"]?.set(Vec3(0.0f, 0.0f, 1.0f)) // blue
   }
-  val greenMaterial = Material(solidProgram).apply{
+  val greenMaterial = Material(solidProgram).apply {
     this["color"]?.set(Vec3(0.0f, 1.0f, 0.0f)) // green
   }
-
-  val lightBlueMaterial = Material(solidProgram).apply{
+  val lightBlueMaterial = Material(solidProgram).apply {
     this["color"]?.set(Vec3(0.0f, 1.0f, 1.0f)) // light blue
   }
   val selectionMaterial = Material(solidProgram).apply {
     this["color"]?.set(Vec3(1.0f, 1.0f, 0.0f)) // yellow highlight
   }
 
-  // enemy mesh
+  // enemy mesh (heart path)
   val enemyMesh = Mesh(blueMaterial, triangleGeometry)
 
+  // legacy three triangles with positions
   val triangles = mutableListOf(
     Pair(Mesh(blueMaterial, triangleGeometry), Vec2(-1f, -0.6f)),
     Pair(Mesh(greenMaterial, triangleGeometry), Vec2(0.2f, 1.0f)),
     Pair(Mesh(lightBlueMaterial, triangleGeometry), Vec2(1.2f, -0.6f))
   )
 
+  // selection + control
   val selectedTriangles = mutableSetOf<Mesh>()
   var selectedRotation = 0.0f
   var zoomLevel = 1.0f
   var lastMousePos: Vec2? = null
   var isPanning = false
-  var t = 0.0f // time
 
-  fun resize(canvas : HTMLCanvasElement) {
-    gl.viewport(0, 0, canvas.width, canvas.height)//#viewport# tell the rasterizer which part of the canvas to draw to ˙HUN˙ a raszterizáló ide rajzoljon
+  // animation time
+  var t = 0.0f
+
+  // cooldown so A/D hold steps slots at readable pace
+  private var rotateCooldownFrames = 0
+
+  fun resize(canvas: HTMLCanvasElement) {
+    gl.viewport(0, 0, canvas.width, canvas.height)
     camera.setAspectRatio(canvas.width.toFloat() / canvas.height.toFloat())
   }
 
   fun update(keysPressed: Set<String>) {
+    // Camera moves only when nothing is selected (legacy behavior)
     if (selectedTriangles.isEmpty()) {
       if ("W" in keysPressed) camera.position.y += 0.01f
       if ("A" in keysPressed) camera.position.x -= 0.01f
@@ -59,6 +67,7 @@ class Scene (
       if ("D" in keysPressed) camera.position.x += 0.01f
     }
 
+    // Move selected objects with arrow keys
     if (selectedTriangles.isNotEmpty()) {
       val step = 0.02f
       for ((mesh, pos) in triangles) {
@@ -71,6 +80,18 @@ class Scene (
       }
     }
 
+    // Rotate selected objects among grid slots using A/D (with small cooldown)
+    if (rotateCooldownFrames > 0) rotateCooldownFrames--
+    if (selectedTriangles.isNotEmpty() && rotateCooldownFrames == 0) {
+      if ("A" in keysPressed) { // counter-clockwise: TR->TL, TL->BL, BL->TR
+        rotateSelectedOnGrid(clockwise = false)
+        rotateCooldownFrames = 10
+      } else if ("D" in keysPressed) { // clockwise: TL->TR, TR->BL, BL->TL
+        rotateSelectedOnGrid(clockwise = true)
+        rotateCooldownFrames = 10
+      }
+    }
+
     if ("Q" in keysPressed) camera.roll += 0.01f
     if ("E" in keysPressed) camera.roll -= 0.01f
     if ("G" in keysPressed) arrangeOnGrid()
@@ -79,15 +100,12 @@ class Scene (
     // Zooming
     if ("Z" in keysPressed) zoomLevel *= 1.02f // zoom in
     if ("X" in keysPressed) zoomLevel *= 0.98f // zoom out
-
     camera.windowSize.set(2.507389f / zoomLevel, 2.0f / zoomLevel)
 
+    // Clear + prep
     gl.clearColor(1.0f, 0.0f, 0.0f, 1.0f)
     gl.clear(GL.COLOR_BUFFER_BIT or GL.DEPTH_BUFFER_BIT)
-
     camera.updateViewProjMatrix()
-
-    // draw all triangles
     gl.useProgram(solidProgram.glProgram)
 
     // Draw all static triangles
@@ -106,12 +124,10 @@ class Scene (
         mesh.draw()
     }
 
-    // moving enemy (heart curve)
+    // Moving enemy (heart curve, infinite)
     t += 0.02f
-
     val px = heartX(t) * 0.05f
     val py = heartY(t) * 0.05f
-
     val dx = dHeartX(t)
     val dy = dHeartY(t)
     val angle = atan2(dy, dx)
@@ -123,16 +139,14 @@ class Scene (
 
     modelmatrix.commit(gl, gl.getUniformLocation(solidProgram.glProgram, "gameObject.modelMatrix")!!)
     camera.viewProjMatrix.commit(gl, gl.getUniformLocation(solidProgram.glProgram, "camera.viewProjMatrix")!!)
-    
     enemyMesh.draw()
   }
 
-  // Hear curve parametric equations
+  // Heart curve parametric equations (with symbolic derivatives)
   fun heartX(t: Float): Float = 16f * sin(t).pow(3)
   fun heartY(t: Float): Float = 13f * cos(t) - 5f * cos(2f * t) - 2f * cos(3f * t) - cos(4f * t)
-  
   fun dHeartX(t: Float): Float = 48f * sin(t).pow(2) * cos(t)
-  fun dHeartY(t: Float): Float =-13f * sin(t) + 10f * sin(2f * t) + 6f * sin(3f * t) + 4f * sin(4f * t)
+  fun dHeartY(t: Float): Float = -13f * sin(t) + 10f * sin(2f * t) + 6f * sin(3f * t) + 4f * sin(4f * t)
 
   fun pick(x: Float, y: Float, event: MouseEvent) {
     val clickPos = Vec2(x, -y)
@@ -160,14 +174,40 @@ class Scene (
   fun arrangeOnGrid() {
     val gridSpacing = 2f
     val positions = listOf(
-      Vec2(-gridSpacing / 2, gridSpacing / 2), // top-left
-      Vec2(gridSpacing / 2, gridSpacing / 2), // top-right
-      Vec2(-gridSpacing / 2, -gridSpacing / 2) // bottom-left
+      Vec2(-gridSpacing / 2,  gridSpacing / 2), // TL
+      Vec2( gridSpacing / 2,  gridSpacing / 2), // TR
+      Vec2(-gridSpacing / 2, -gridSpacing / 2)  // BL
     )
     for ((i, pair) in triangles.withIndex()) {
       if (i < positions.size) {
         pair.second.set(positions[i])
       }
+    }
+  }
+
+  // Rotate selected meshes among grid slots (A=CCW, D=CW)
+  private fun rotateSelectedOnGrid(clockwise: Boolean) {
+    val gridSpacing = 2f
+    val slots = arrayOf(
+      Vec2(-gridSpacing / 2,  gridSpacing / 2), // 0 = TL
+      Vec2( gridSpacing / 2,  gridSpacing / 2), // 1 = TR
+      Vec2(-gridSpacing / 2, -gridSpacing / 2)  // 2 = BL
+    )
+    val nextCW  = intArrayOf(1, 2, 0) // TL->TR, TR->BL, BL->TL
+    val nextCCW = intArrayOf(2, 0, 1) // TL->BL, TR->TL, BL->TR
+
+    for ((mesh, pos) in triangles) {
+      if (mesh !in selectedTriangles) continue
+
+      // find nearest slot
+      var bestIdx = 0
+      var bestDist = Float.POSITIVE_INFINITY
+      for (i in slots.indices) {
+        val d = (pos - slots[i]).length()
+        if (d < bestDist) { bestDist = d; bestIdx = i }
+      }
+      val newIdx = if (clockwise) nextCW[bestIdx] else nextCCW[bestIdx]
+      pos.set(slots[newIdx])
     }
   }
 
