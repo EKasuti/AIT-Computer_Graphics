@@ -92,6 +92,11 @@ class Scene(
     if ("G" in keysPressed) arrangeOnGrid()
     if ("ESCAPE" in keysPressed) selectedTriangles.clear()
 
+    if ("BACK_SPACE" in keysPressed || "DELETE" in keysPressed) {
+      triangles.removeAll { (mesh, _) -> mesh in selectedTriangles }
+      selectedTriangles.clear()
+    }    
+
     // Zooming
     if ("Z" in keysPressed) zoomLevel *= 1.02f // zoom in
     if ("X" in keysPressed) zoomLevel *= 0.98f // zoom out
