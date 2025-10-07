@@ -3,6 +3,7 @@ import org.w3c.dom.events.MouseEvent
 import org.w3c.dom.events.WheelEvent
 import org.khronos.webgl.WebGLRenderingContext as GL //# GL# we need this for the constants declared ˙HUN˙ a constansok miatt kell
 import vision.gears.webglmath.*
+import kotlin.math.*
 
 class Scene (
   val gl : WebGL2RenderingContext){
@@ -29,10 +30,13 @@ class Scene (
     this["color"]?.set(Vec3(1.0f, 1.0f, 0.0f)) // yellow highlight
   }
 
+  // enemy mesh
+  val enemyMesh = Mesh(blueMaterial, triangleGeometry)
+
   val triangles = mutableListOf(
-    Pair(Mesh(blueMaterial, triangleGeometry), Vec2(-0.6f, -0.3f)),
-    Pair(Mesh(greenMaterial, triangleGeometry), Vec2(0.2f, 0.4f)),
-    Pair(Mesh(lightBlueMaterial, triangleGeometry), Vec2(0.8f, -0.4f))
+    Pair(Mesh(blueMaterial, triangleGeometry), Vec2(-1f, -0.6f)),
+    Pair(Mesh(greenMaterial, triangleGeometry), Vec2(0.2f, 1.0f)),
+    Pair(Mesh(lightBlueMaterial, triangleGeometry), Vec2(1.2f, -0.6f))
   )
 
   var selectedTriangle: Mesh? = null
@@ -41,6 +45,7 @@ class Scene (
   var zoomLevel = 1.0f
   var lastMousePos: Vec2? = null
   var isPanning = false
+  var t = 0.0f // time
 
   fun resize(canvas : HTMLCanvasElement) {
     gl.viewport(0, 0, canvas.width, canvas.height)//#viewport# tell the rasterizer which part of the canvas to draw to ˙HUN˙ a raszterizáló ide rajzoljon
@@ -95,6 +100,8 @@ class Scene (
 
     // draw all triangles
     gl.useProgram(solidProgram.glProgram)
+
+    // Draw all static triangles
     for ((mesh, pos) in triangles) {
       modelmatrix.set()
         .translate(pos.x, pos.y)
@@ -109,7 +116,33 @@ class Scene (
       else
         mesh.draw()
     }
+    
+    t += 0.02f
+
+    val px = heartX(t) * 0.05f
+    val py = heartY(t) * 0.05f
+
+    val dx = dHeartX(t)
+    val dy = dHeartY(t)
+    val angle = atan2(dy, dx)
+
+    modelmatrix.set()
+      .translate(px, py)
+      .rotate(angle, 0f, 0f, 1f)
+      .scale(0.3f, 0.3f)
+
+    modelmatrix.commit(gl, gl.getUniformLocation(solidProgram.glProgram, "gameObject.modelMatrix")!!)
+    camera.viewProjMatrix.commit(gl, gl.getUniformLocation(solidProgram.glProgram, "camera.viewProjMatrix")!!)
+
+    enemyMesh.draw()
   }
+
+  // Hear curve parametric equations
+  fun heartX(t: Float): Float = 16f * sin(t).pow(3)
+  fun heartY(t: Float): Float = 13f * cos(t) - 5f * cos(2f * t) - 2f * cos(3f * t) - cos(4f * t)
+
+  fun dHeartX(t: Float): Float = 48f * sin(t).pow(2) * cos(t)
+  fun dHeartY(t: Float): Float =-13f * sin(t) + 10f * sin(2f * t) + 6f * sin(3f * t) + 4f * sin(4f * t)
 
   fun pick(x: Float, y: Float) {
     val clickPos = Vec2(x, -y)
