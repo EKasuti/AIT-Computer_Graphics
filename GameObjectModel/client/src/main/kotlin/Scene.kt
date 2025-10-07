@@ -36,6 +36,7 @@ class Scene (
   var selectedTriangle: Mesh? = null
   var selectedPos: Vec2? = null
   var selectedRotation = 0.0f
+  var zoomLevel = 1.0f
 
   fun resize(canvas : HTMLCanvasElement) {
     gl.viewport(0, 0, canvas.width, canvas.height)//#viewport# tell the rasterizer which part of the canvas to draw to ˙HUN˙ a raszterizáló ide rajzoljon
@@ -77,14 +78,18 @@ class Scene (
       selectedRotation = 0.0f
     }
 
-    gl.clearColor(1.0f, 0.0f, 0.0f, 1.0f)//## red, green, blue, alpha in [0, 1]
-  
+    // Zooming
+    if ("Z" in keysPressed) zoomLevel *= 1.02f // zoom in
+    if ("X" in keysPressed) zoomLevel *= 0.98f // zoom out
 
+    camera.windowSize.set(2.507389f / zoomLevel, 2.0f / zoomLevel)
+
+    gl.clearColor(1.0f, 0.0f, 0.0f, 1.0f)//## red, green, blue, alpha in [0, 1]
     gl.clear(GL.COLOR_BUFFER_BIT or GL.DEPTH_BUFFER_BIT)//#or# bitwise OR of flags
 
     camera.updateViewProjMatrix()
 
-     // draw all triangles
+    // draw all triangles
     gl.useProgram(solidProgram.glProgram)
     for ((mesh, pos) in triangles) {
       modelmatrix.set()
@@ -134,5 +139,12 @@ class Scene (
         pos.set(positions[i])
       }
     }
+  }
+
+  fun onScroll(deltaY: Double) {
+    val factor = if (deltaY > 0) 1.05f else 0.95f
+    camera.windowSize.y *= factor
+    camera.windowSize.x *= factor
+    camera.updateViewProjMatrix()
   }
 }

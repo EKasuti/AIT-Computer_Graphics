@@ -21,6 +21,9 @@
 | **Q** | Roll camera clockwise |
 | **E** | Roll camera counterclockwise |
 | **G** | Arrange objects on a regular grid |
+| **Z** | Zoom In |
+| **X** | Zoom Out |
+| **Delete** | Delete a selected object |
 | **Arrow Keys** | Move the **selected triangle** up / down / left / right |
 
 ---
