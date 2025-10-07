@@ -76,11 +76,11 @@ class Scene (
       mesh.draw()
     }
 
-    // --- Highlight selected one ---
+    // highlight selected triangle
     selectedTriangle?.let { mesh ->
       val pos = selectedPos ?: return
       gl.useProgram(solidProgram.glProgram)
-      modelmatrix.set().translate(pos.x, pos.y)
+      modelmatrix.set().translate(pos.x, pos.y).scale(0.5f, 0.5f)
       modelmatrix.commit(gl, gl.getUniformLocation(solidProgram.glProgram, "gameObject.modelMatrix")!!)
       camera.viewProjMatrix.commit(gl, gl.getUniformLocation(solidProgram.glProgram, "camera.viewProjMatrix")!!)
       mesh.using(selectionMaterial)?.draw()
