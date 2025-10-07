@@ -27,7 +27,7 @@ class Scene (
     this["color"]?.set(Vec3(1.0f, 1.0f, 0.0f)) // yellow highlight
   }
 
-  val triangles = listOf(
+  val triangles = mutableListOf(
     Pair(Mesh(blueMaterial, triangleGeometry), Vec2(-0.6f, -0.3f)),
     Pair(Mesh(greenMaterial, triangleGeometry), Vec2(0.2f, 0.4f)),
     Pair(Mesh(lightBlueMaterial, triangleGeometry), Vec2(0.8f, -0.4f))
@@ -67,6 +67,15 @@ class Scene (
       if ("D" in keysPressed) selectedRotation -= 0.05f
     }
 
+    if ("BACK_SPACE" in keysPressed && selectedTriangle != null) {
+      val index = triangles.indexOfFirst { it.first == selectedTriangle }
+      if (index != -1) {
+        triangles.removeAt(index)
+      }
+      selectedTriangle = null
+      selectedPos = null
+      selectedRotation = 0.0f
+    }
 
     gl.clearColor(1.0f, 0.0f, 0.0f, 1.0f)//## red, green, blue, alpha in [0, 1]
   
