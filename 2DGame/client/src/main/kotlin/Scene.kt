@@ -34,9 +34,13 @@ class Scene (
   val backgroundMaterial = Material(backgroundProgram).apply{
     this["colorTexture"]?.set(Texture2D(gl, "media/nebula.jpg"))
   }
+  val explosionMaterial = Material(texturedProgram).apply {
+    this["colorTexture"]?.set(Texture2D(gl, "media/explosion.png"))
+  }
   
   val backgroundMesh = Mesh(backgroundMaterial, texturedQuadGeometry)
   val fighterMesh = Mesh(fighterMaterial, texturedQuadGeometry)
+  val explosionMesh = Mesh(explosionMaterial, texturedQuadGeometry)
 
   val camera = OrthoCamera().apply{
     position.set(1f, 1f)
@@ -74,6 +78,13 @@ class Scene (
               normal * relativeVelocity.dot(normal)
             velocity -= relativeVelocityAlongNormal * 0.5f * 1.6f
             it.velocity += relativeVelocityAlongNormal * 0.5f * 1.6f
+
+            // Explosion effect
+            val explosion = ExplosionGameObject(explosionMesh).apply {
+              position.set(it.position)
+              scale.set(2.5f, 2.5f, 1.0f)
+            }
+            (gameObjects as ArrayList).add(explosion)
             //return@move false
           }
         }
