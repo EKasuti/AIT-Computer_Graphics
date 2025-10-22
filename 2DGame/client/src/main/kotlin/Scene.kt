@@ -53,7 +53,7 @@ class Scene (
       t : Float,
       keysPressed : Set<String>,
       gameObjects : List<GameObject>
-      ) : Boolean {
+    ) : Boolean {
 
       gameObjects.forEach{
         if(it == this){ 
@@ -79,10 +79,11 @@ class Scene (
 
       if("W" in keysPressed){
         val ahead = Vec3(cos(roll), sin(roll), 0f)
-        velocity += ahead * 3.0f * dt
+        velocity += ahead * 10.0f * dt
       }
       if("S" in keysPressed){
-        velocity.set()
+        val backward = Vec3(-cos(roll), -sin(roll), 0f)
+        velocity += backward * 10.0f * dt
       }
       if("D" in keysPressed){
         angularVelocity -= 3.0f * dt
@@ -93,10 +94,13 @@ class Scene (
       if("X" in keysPressed){
         return false
       }
-      velocity *= 0.5f.pow(dt)
-      angularVelocity *= 0.5f.pow(dt)
+      
       position += velocity * dt
       roll += angularVelocity * dt
+
+      velocity *= 0.98f.pow(dt)
+      angularVelocity *= 0.98f.pow(dt)
+
       return true
     }
   }
