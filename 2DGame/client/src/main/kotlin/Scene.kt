@@ -142,7 +142,9 @@ class Scene (
       }
 
       // Flame visibility
-      flame?.isActive = thrusting
+      gameObjects.filterIsInstance<FlameGameObject>().forEach {
+        it.isActive = thrusting
+      }
 
       return true
     }
@@ -153,8 +155,10 @@ class Scene (
     avatar.roll = 1f
 
     // Flames
-    flame = FlameGameObject(flameMesh, avatar, Vec3(-2.5f, 0.0f, -1.0f))
-    gameObjects += flame!!
+    val leftFlame = FlameGameObject(flameMesh, avatar, Vec3(-2.6f, -0.4f, -1.0f))
+    val rightFlame = FlameGameObject(flameMesh, avatar, Vec3(-2.6f, 0.4f, -1.0f))
+    gameObjects += leftFlame
+    gameObjects += rightFlame
 
 
     val platformMaterial = Material(texturedProgram).apply {
