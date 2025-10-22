@@ -17,6 +17,7 @@ class Scene (
   val vsTextured = Shader(gl, GL.VERTEX_SHADER, "textured-vs.glsl")
   val fsTextured = Shader(gl, GL.FRAGMENT_SHADER, "textured-fs.glsl")
   val texturedProgram = Program(gl, vsTextured, fsTextured  )
+
   val asteroidMaterial = Material(texturedProgram).apply{
     this["colorTexture"]?.set(Texture2D(gl, "media/asteroid.png"))
     this["textureScale"]?.set(1f/6f, 1f/6f)
@@ -48,6 +49,7 @@ class Scene (
   val avatar = object : GameObject(fighterMesh) {
     val velocity = Vec3()
     var angularVelocity = 0f
+
     override fun move(
       dt : Float,
       t : Float,
@@ -101,6 +103,27 @@ class Scene (
       velocity *= 0.98f.pow(dt)
       angularVelocity *= 0.98f.pow(dt)
 
+      // Landing collision detection
+      gameObjects.forEach {
+        if (it is PlatformGameObject) {
+          val platformY = it.yLevel
+          val distanceToPlatform = position.y - platformY
+
+          if (distanceToPlatform < 1.0f) {
+            val penetration = 1.0f - distanceToPlatform
+            val springStrength = 20.0f
+
+            velocity.y += springStrength * penetration * dt
+
+            velocity.y *= 0.95f.pow(dt)
+
+            if (position.y < platformY + 1.0f) {
+              position.y = platformY + 1.0f
+            }
+          }
+        }
+      }
+
       return true
     }
   }
@@ -108,22 +131,36 @@ class Scene (
     gameObjects += GameObject(backgroundMesh)
     gameObjects += avatar
     avatar.roll = 1f
-  }
 
-  val asteroid = AsteroidGameObject(asteroidMesh).apply {
-    position.set(-5.0f, 0.0f, 0.0f)
-    scale.set(1.0f, 1.0f, 1.0f)
-    velocity.set(0.2f)
-  }
-  init {
-    gameObjects += asteroid
-  }
+    val platformMaterial = Material(texturedProgram).apply {
+      this["colorTexture"]?.set(Texture2D(gl, "media/platform.png"))
+    }
 
-  val asteroid2 = AsteroidGameObject(asteroidMesh).apply {
-    position.set(5.0f, 5.0f, 0.0f)
-    velocity.set(-0.2f)
-  }
-  init {
+    val platformMesh = Mesh(platformMaterial, texturedQuadGeometry)
+    // Single platform
+    // val platform = PlatformGameObject(platformMesh, yLevel = -5.0f)
+    // gameObjects += platform
+
+    // Multiple platforms
+    for (i in -3..3) {
+      val platform = PlatformGameObject(platformMesh, yLevel = -9.0f).apply {
+        position.set(i * 6.0f, -9.0f, 0.0f)
+      }
+      gameObjects += platform
+    }
+
+    val asteroid1 = AsteroidGameObject(asteroidMesh).apply {
+      position.set(-5.0f, 0.0f, 0.0f)
+      scale.set(1.0f, 1.0f, 1.0f)
+      velocity.set(0.2f)
+    }
+  
+    val asteroid2 = AsteroidGameObject(asteroidMesh).apply {
+      position.set(5.0f, 5.0f, 0.0f)
+      velocity.set(-0.2f)
+    }
+  
+    gameObjects += asteroid1
     gameObjects += asteroid2
   }
 
