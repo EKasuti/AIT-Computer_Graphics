@@ -38,11 +38,15 @@ class Scene (
   val flameMaterial = Material(texturedProgram).apply {
     this["colorTexture"]?.set(Texture2D(gl, "media/flame.png"))
   }
+  val bulletMaterial = Material(texturedProgram).apply {
+    this["colorTexture"]?.set(Texture2D(gl, "media/bullet.png"))
+  }
   
   val backgroundMesh = Mesh(backgroundMaterial, texturedQuadGeometry)
   val fighterMesh = Mesh(fighterMaterial, texturedQuadGeometry)
   val explosionMesh = Mesh(explosionMaterial, texturedQuadGeometry)
   val flameMesh = Mesh(flameMaterial, texturedQuadGeometry)
+  val bulletMesh = Mesh(bulletMaterial, texturedQuadGeometry)
 
   val camera = OrthoCamera().apply{
     position.set(1f, 1f)
@@ -56,6 +60,7 @@ class Scene (
   val avatar = object : GameObject(fighterMesh) {
     val velocity = Vec3()
     var angularVelocity = 0f
+    var shootCooldown = 0f
 
     override fun move(
       dt : Float,
@@ -114,6 +119,14 @@ class Scene (
         return false
       }
       
+      // Bullet 
+      shootCooldown -= dt
+      if("SPACE" in keysPressed){
+        val bulletDirection = Vec3(cos(roll), sin(roll), 0f)
+        val bullet = BulletGameObject(bulletMesh, this, bulletDirection)
+        (gameObjects as ArrayList).add(bullet)
+        shootCooldown = 1.0f 
+      }
       position += velocity * dt
       roll += angularVelocity * dt
 
