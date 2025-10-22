@@ -12,8 +12,6 @@ class Scene (
   val gl : WebGL2RenderingContext)  : UniformProvider("scene") {
 
   val texturedQuadGeometry = TexturedQuadGeometry(gl)
-
-
   val vsTextured = Shader(gl, GL.VERTEX_SHADER, "textured-vs.glsl")
   val fsTextured = Shader(gl, GL.FRAGMENT_SHADER, "textured-fs.glsl")
   val texturedProgram = Program(gl, vsTextured, fsTextured  )
@@ -37,10 +35,14 @@ class Scene (
   val explosionMaterial = Material(texturedProgram).apply {
     this["colorTexture"]?.set(Texture2D(gl, "media/explosion.png"))
   }
+  val flameMaterial = Material(texturedProgram).apply {
+    this["colorTexture"]?.set(Texture2D(gl, "media/flame.png"))
+  }
   
   val backgroundMesh = Mesh(backgroundMaterial, texturedQuadGeometry)
   val fighterMesh = Mesh(fighterMaterial, texturedQuadGeometry)
   val explosionMesh = Mesh(explosionMaterial, texturedQuadGeometry)
+  val flameMesh = Mesh(flameMaterial, texturedQuadGeometry)
 
   val camera = OrthoCamera().apply{
     position.set(1f, 1f)
@@ -49,6 +51,7 @@ class Scene (
   }
 
   var gameObjects = ArrayList<GameObject>()
+  var flame: FlameGameObject? = null
 
   val avatar = object : GameObject(fighterMesh) {
     val velocity = Vec3()
@@ -90,16 +93,19 @@ class Scene (
         }
       }
 
+      var thrusting = false
       if("W" in keysPressed){
         val ahead = Vec3(cos(roll), sin(roll), 0f)
         velocity += ahead * 10.0f * dt
+        thrusting = true
       }
       if("S" in keysPressed){
         val backward = Vec3(-cos(roll), -sin(roll), 0f)
         velocity += backward * 10.0f * dt
+        thrusting = false
       }
       if("D" in keysPressed){
-        angularVelocity -= 3.0f * dt
+        angularVelocity -= 3.0f * dt       
       }
       if("A" in keysPressed){
         angularVelocity += 3.0f * dt
@@ -135,6 +141,9 @@ class Scene (
         }
       }
 
+      // Flame visibility
+      flame?.isActive = thrusting
+
       return true
     }
   }
@@ -142,6 +151,11 @@ class Scene (
     gameObjects += GameObject(backgroundMesh)
     gameObjects += avatar
     avatar.roll = 1f
+
+    // Flames
+    flame = FlameGameObject(flameMesh, avatar, Vec3(-2.5f, 0.0f, -1.0f))
+    gameObjects += flame!!
+
 
     val platformMaterial = Material(texturedProgram).apply {
       this["colorTexture"]?.set(Texture2D(gl, "media/platform.png"))
