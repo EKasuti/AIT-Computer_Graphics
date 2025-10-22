@@ -41,12 +41,16 @@ class Scene (
   val bulletMaterial = Material(texturedProgram).apply {
     this["colorTexture"]?.set(Texture2D(gl, "media/bullet.png"))
   }
+  val seekerMaterial = Material(texturedProgram).apply {
+    this["colorTexture"]?.set(Texture2D(gl, "media/ufo.png"))
+  }
   
   val backgroundMesh = Mesh(backgroundMaterial, texturedQuadGeometry)
   val fighterMesh = Mesh(fighterMaterial, texturedQuadGeometry)
   val explosionMesh = Mesh(explosionMaterial, texturedQuadGeometry)
   val flameMesh = Mesh(flameMaterial, texturedQuadGeometry)
   val bulletMesh = Mesh(bulletMaterial, texturedQuadGeometry)
+  val seekerMesh = Mesh(seekerMaterial, texturedQuadGeometry)
 
   val camera = OrthoCamera().apply{
     position.set(1f, 1f)
@@ -56,6 +60,9 @@ class Scene (
 
   var gameObjects = ArrayList<GameObject>()
   var flame: FlameGameObject? = null
+   // Seeker
+  var seekerSpawnTimer = 0f
+  val seekerSpawnInterval = 5f
 
   val avatar = object : GameObject(fighterMesh) {
     val velocity = Vec3()
@@ -173,6 +180,13 @@ class Scene (
     gameObjects += leftFlame
     gameObjects += rightFlame
 
+    // Seeker enemy
+    val seeker = SeekerGameObject(seekerMesh, avatar).apply {
+      position.set(10.0f, 0.0f, 0.0f)
+      scale.set(0.8f, 0.8f, 1.0f)
+    }
+    gameObjects += seeker
+
 
     val platformMaterial = Material(texturedProgram).apply {
       this["colorTexture"]?.set(Texture2D(gl, "media/platform.png"))
@@ -223,7 +237,12 @@ class Scene (
     val t = (timeAtThisFrame - timeAtFirstFrame).toFloat() / 1000.0f
     //TODO: set property time (reflecting uniform scene.time) 
     timeAtLastFrame = timeAtThisFrame
-    
+
+    seekerSpawnTimer -= dt
+    if (seekerSpawnTimer <= 0f) {
+      spawnSeeker()
+      seekerSpawnTimer = seekerSpawnInterval
+    }
     camera.position.set(avatar.position)
     camera.updateViewProjMatrix()
 
@@ -251,5 +270,18 @@ class Scene (
     gameObjects.forEach{
       it.draw(this, camera)
     }
+  }
+
+  // Random spawn near the camera
+  fun spawnSeeker() {
+    val spawnX = camera.position.x + (-10..10).random().toFloat()
+    val spawnY = camera.position.y + (-6..6).random().toFloat()
+  
+    val seeker = SeekerGameObject(seekerMesh, avatar).apply {
+      position.set(spawnX, spawnY, 0f)
+      scale.set(0.8f, 0.8f, 1.0f)
+    }
+  
+    gameObjects += seeker
   }
 }
