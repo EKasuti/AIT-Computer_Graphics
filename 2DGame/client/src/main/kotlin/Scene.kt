@@ -7,6 +7,7 @@ import vision.gears.webglmath.Vec2
 import vision.gears.webglmath.Vec3
 import vision.gears.webglmath.Mat4
 import kotlin.math.*
+import kotlin.random.Random
 
 class Scene (
   val gl : WebGL2RenderingContext)  : UniformProvider("scene") {
@@ -44,6 +45,9 @@ class Scene (
   val seekerMaterial = Material(texturedProgram).apply {
     this["colorTexture"]?.set(Texture2D(gl, "media/ufo.png"))
   }
+  val diamondMaterial = Material(texturedProgram).apply {
+    this["colorTexture"]?.set(Texture2D(gl, "media/diamond.png"))
+  }
   
   val backgroundMesh = Mesh(backgroundMaterial, texturedQuadGeometry)
   val fighterMesh = Mesh(fighterMaterial, texturedQuadGeometry)
@@ -51,6 +55,7 @@ class Scene (
   val flameMesh = Mesh(flameMaterial, texturedQuadGeometry)
   val bulletMesh = Mesh(bulletMaterial, texturedQuadGeometry)
   val seekerMesh = Mesh(seekerMaterial, texturedQuadGeometry)
+  val diamondMesh = Mesh(diamondMaterial, texturedQuadGeometry)
 
   val camera = OrthoCamera().apply{
     position.set(1f, 1f)
@@ -63,6 +68,8 @@ class Scene (
    // Seeker
   var seekerSpawnTimer = 0f
   val seekerSpawnInterval = 5f
+  // diamond collection
+  val collectedDiamonds = mutableListOf<GameObject>()
 
   val avatar = object : GameObject(fighterMesh) {
     val velocity = Vec3()
@@ -76,6 +83,7 @@ class Scene (
       gameObjects : List<GameObject>
     ) : Boolean {
 
+      // asteroid collision
       gameObjects.forEach{
         if(it == this){ 
           return@forEach
@@ -187,7 +195,7 @@ class Scene (
     }
     gameObjects += seeker
 
-
+    // Platform
     val platformMaterial = Material(texturedProgram).apply {
       this["colorTexture"]?.set(Texture2D(gl, "media/platform.png"))
     }
@@ -238,10 +246,16 @@ class Scene (
     //TODO: set property time (reflecting uniform scene.time) 
     timeAtLastFrame = timeAtThisFrame
 
+    // Spawn seekers
     seekerSpawnTimer -= dt
     if (seekerSpawnTimer <= 0f) {
       spawnSeeker()
       seekerSpawnTimer = seekerSpawnInterval
+    }
+
+    // Spawn diamonds
+    if (Random.nextFloat() < 0.02) {
+      spawnDiamond()
     }
     camera.position.set(avatar.position)
     camera.updateViewProjMatrix()
@@ -257,6 +271,14 @@ class Scene (
 
     val deathRow = ArrayList<GameObject>()
     gameObjects.forEach{
+      if(it is DiamondGameObject) {
+        val toAvatar = avatar.position - it.position
+        if (toAvatar.length() < 1.2f && !it.collected) {
+          it.collected = true
+          collectedDiamonds += it
+          console.log("Diamond collected! Total: ${collectedDiamonds.size}")
+        }
+      }
       if(!it.move(dt, t, keysPressed, gameObjects)){
         deathRow += it
       }
@@ -269,6 +291,19 @@ class Scene (
     }
     gameObjects.forEach{
       it.draw(this, camera)
+    }
+
+    val cornerX = camera.position.x + camera.windowSize.x / 2f - 1.0f
+    val cornerY = camera.position.y + camera.windowSize.y / 2f - 1.0f
+
+    collectedDiamonds.forEachIndexed { i, _ ->
+      val displayDiamond = GameObject(diamondMesh).apply {
+        // we then offset each diamond by 1 unit to the left
+        position.set(cornerX - i * 1.0f, cornerY, 0f)
+        scale.set(0.5f, 0.5f, 1.0f)
+      }
+      displayDiamond.update()
+      displayDiamond.draw(this, camera)
     }
   }
 
@@ -283,5 +318,16 @@ class Scene (
     }
   
     gameObjects += seeker
+  }
+
+  // Random spawn of diamond above the avatar
+  fun spawnDiamond() {
+    val spawnX = avatar.position.x + (-8..8).random().toFloat()
+    val spawnY = avatar.position.y + (8..12).random().toFloat()
+    val diamond = DiamondGameObject(diamondMesh, avatar).apply {
+      position.set(spawnX, spawnY, 0f)
+      scale.set(0.5f, 0.5f, 1.0f)
+    }
+    gameObjects += diamond
   }
 }
