@@ -51,3 +51,22 @@ On Jupiter, it rains diamonds
 - Collected diamonds appear in the **upper-right corner of the screen**, sticking to the viewport even as the camera moves.  
 
 ---
+
+## Installation
+1. Clone the repository:
+   ```
+   git clone https://github.com/EKasuti/AIT-Computer_Graphics.git
+   cd 2DGame
+   ```
+2. Build with gradle:
+   ```
+   gradle build
+   ```
+3. Run it locally with a simple server:
+   ```
+   npx http-server
+   // or
+   http-server
+   ```
+
+---

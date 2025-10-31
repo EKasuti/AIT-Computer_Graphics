@@ -5,7 +5,8 @@ Shapes and patterns assignment.
 ## Installation
 1. Clone the repository:
    ```
-   git clone https://github.com/EKasuti/AIT-Shapes_-_Patterns.git
+   git clone https://github.com/EKasuti/AIT-Computer_Graphics.git
+   cd ShapePatterns
    ```
 2. Build with gradle:
    ```
