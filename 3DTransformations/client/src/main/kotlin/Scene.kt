@@ -51,6 +51,7 @@ class Scene (
   init {
     backgroundMaterial["envTexture"]?.set(envTexture)
     val zoomUniform = backgroundMaterial["zoom"]
+    val carPosUniform = backgroundMaterial["carPos"]
 
     if (zoomUniform != null) {
       zoomUniform.set(1.0f)
@@ -114,6 +115,8 @@ class Scene (
 
     val zoomUniform = backgroundMaterial["zoom"]
     zoomUniform?.set(currentZoom)
+    val carPosUniform = backgroundMaterial["carPos"]
+    carPosUniform?.set(car.position)
 
     gl.clearColor(0.3f, 0.0f, 0.3f, 1.0f)
     gl.clearDepth(1.0f)
