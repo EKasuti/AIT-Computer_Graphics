@@ -29,20 +29,12 @@ vec3 noiseGrad(vec3 r) {
 
 // we need to bind texture to this
 uniform struct{
-  samplerCube colorTexture;
+  sampler2D colorTexture;
 } material;
 
 void main(void) {
-  //fragmentColor = texture(material.colorTexture, texCoord);
-  //fragmentColor = vec4(normal, 1.0);
-  //fragmentColor = vec4(worldPosition, 1.0);
-  //vec3 d = normalize(worldPosition-eye);
-  //fragmentColor = vec4(reflect(d, (normal)), 1.0);
-  //fragmentColor = texture(material.colorTexture, reflect(d, (normal)));
-  //fragmentColor = texture(material.colorTexture, normal);
-    vec3 noise = noiseGrad(modelPosition.xyz * 50.0) * 0.05;
-    vec3 normalPertubed = normal + noise;
-    vec3 viewDir = normalize(eye - worldPosition.xyz);
-    fragmentColor = texture(material.colorTexture, reflect(-viewDir, normalPertubed));
+  vec3 noise = noiseGrad(modelPosition.xyz * 50.0) * 0.05;
+  vec3 normalPertubed = normal + noise;
+  fragmentColor = texture(material.colorTexture, texCoord);
 }
 

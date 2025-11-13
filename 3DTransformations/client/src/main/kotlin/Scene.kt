@@ -7,6 +7,7 @@ import vision.gears.webglmath.*
 class Scene (
   val gl : WebGL2RenderingContext) {
 
+  // Shaders
   val vsIdle = Shader(gl, GL.VERTEX_SHADER, "idle-vs.glsl")
   val fsSolid = Shader(gl, GL.FRAGMENT_SHADER, "solid-fs.glsl")
   val solidProgram = Program(gl, vsIdle, fsSolid, Program.PC)
@@ -21,48 +22,54 @@ class Scene (
 
   val texturedQuadGeometry = TexturedQuadGeometry(gl)
 
+  // Cube map
   val envTexture = TextureCube(gl,
     "media/posx512.jpg", "media/negx512.jpg",
     "media/posy512.jpg", "media/negy512.jpg",
     "media/posz512.jpg", "media/negz512.jpg"
   )
 
-  // LABTODO: load geometries from the JSON file, create Meshes
   val jsonLoader = JsonLoader()
-  val slowpokeMeshes = jsonLoader.loadMeshes(gl,
-    "media/slowpoke/slowpoke.json",
-    Material(texturedProgram).apply{
-      this["colorTexture"]?.set(
-        //Texture2D(gl, "media/slowpoke/YadonDh.png"))
-        envTexture)
-    },
-    Material(texturedProgram).apply{
-      this["colorTexture"]?.set(
-        //Texture2D(gl, "media/slowpoke/YadonEyeDh.png"))
-        envTexture)
-    }
+
+  // Chevrolet car model
+  val chevyMaterial = Material(texturedProgram).apply {
+    gl.bindTexture(GL.TEXTURE_CUBE_MAP, null)
+    this["colorTexture"]?.set(Texture2D(gl, "media/chevy/chevy.png"))
+  }
+
+  val carMeshes = jsonLoader.loadMeshes(
+    gl, "media/chevy/chassis.json", chevyMaterial
   )
 
-  
+  val wheelMeshes = jsonLoader.loadMeshes(
+    gl, "media/chevy/wheel.json", chevyMaterial
+  )
 
   val backgroundMaterial = Material(backgroundProgram)
   val backgroundMesh = Mesh(backgroundMaterial, texturedQuadGeometry)
-  init{
-    backgroundMaterial["envTexture"]?.set( this.envTexture )
-  }
-  val gameObjects = ArrayList<GameObject>()
-
-  val slowpoke = GameObject(*slowpokeMeshes)
 
   init {
-    // LABTODO: create and add game object using meshes loaded from JSON
-    gameObjects += GameObject(backgroundMesh)
-    gameObjects += slowpoke
+    backgroundMaterial["envTexture"]?.set(envTexture)
   }
 
-  // LABTODO: replace with 3D camera
-  val camera = PerspectiveCamera(*Program.all).apply{
-    position.set(1f, 1f)
+  // Car and wheels
+  val wheelFL = Wheel(wheelMeshes, Vec3(+7.0f, -4f, +14f), true)
+  val wheelFR = Wheel(wheelMeshes, Vec3(-7.0f, -4f, +14f), true)
+  val wheelBL = Wheel(wheelMeshes, Vec3(+7.0f, -4f, -12f), false)
+  val wheelBR = Wheel(wheelMeshes, Vec3(-7.0f, -4f, -12f), false)
+
+  val car = Car(
+    carMeshes,
+    listOf(wheelFL, wheelFR, wheelBL, wheelBR)
+  )
+
+  val gameObjects = ArrayList<GameObject>().apply {
+    add(GameObject(backgroundMesh))
+    addAll(car.getObjects())
+  }
+
+  val camera = PerspectiveCamera(*Program.all).apply {
+    position.set(0f, 12f, 100f)
   }
 
   val timeAtFirstFrame = Date().getTime()
@@ -82,20 +89,20 @@ class Scene (
 
     gl.enable(GL.DEPTH_TEST)
 
-    //LABTODO: move camera
     camera.move(dt, keysPressed)
 
-    gl.clearColor(0.3f, 0.0f, 0.3f, 1.0f)//## red, green, blue, alpha in [0, 1]
-    gl.clearDepth(1.0f)//## will be useful in 3D ˙HUN˙ 3D-ben lesz hasznos
-    gl.clear(GL.COLOR_BUFFER_BIT or GL.DEPTH_BUFFER_BIT)//#or# bitwise OR of flags
+    gl.clearColor(0.3f, 0.0f, 0.3f, 1.0f)
+    gl.clearDepth(1.0f)
+    gl.clear(GL.COLOR_BUFFER_BIT or GL.DEPTH_BUFFER_BIT)
 
     gl.enable(GL.BLEND)
     gl.blendFunc(
       GL.SRC_ALPHA,
-      GL.ONE_MINUS_SRC_ALPHA)
+    GL.ONE_MINUS_SRC_ALPHA)
 
-    slowpoke.roll += dt;
-    slowpoke.pitch += dt / 5.0f;
+    
+    car.control(dt, keysPressed)
+    car.updateHierarchy()
 
     for (gameObject in gameObjects) {
       gameObject.move(dt, t, keysPressed, gameObjects)
