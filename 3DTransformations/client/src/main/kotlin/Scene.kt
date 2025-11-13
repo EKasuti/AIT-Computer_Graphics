@@ -50,6 +50,11 @@ class Scene (
 
   init {
     backgroundMaterial["envTexture"]?.set(envTexture)
+    val zoomUniform = backgroundMaterial["zoom"]
+
+    if (zoomUniform != null) {
+      zoomUniform.set(1.0f)
+    }
   }
 
   // Car and wheels
@@ -75,8 +80,12 @@ class Scene (
     position.set(0f, 12f, 100f)
   }
 
-  val timeAtFirstFrame = Date().getTime()
-  var timeAtLastFrame =  timeAtFirstFrame
+  // Zoom properties
+  var currentZoom = 1.0f
+  var targetZoom = 1.0f
+
+  val timeAtFirstFrame = Date().getTime().toFloat()
+  var timeAtLastFrame = timeAtFirstFrame
 
   fun resize(canvas : HTMLCanvasElement) {
     camera.setAspectRatio(canvas.width.toFloat() / canvas.height.toFloat())
@@ -85,7 +94,7 @@ class Scene (
 
   @Suppress("UNUSED_PARAMETER")
   fun update(keysPressed : Set<String>) {
-    val timeAtThisFrame = Date().getTime()
+    val timeAtThisFrame = Date().getTime().toFloat()
     val dt = (timeAtThisFrame - timeAtLastFrame).toFloat() / 1000.0f
     val t = (timeAtThisFrame - timeAtFirstFrame).toFloat() / 1000.0f
     timeAtLastFrame = timeAtThisFrame
@@ -93,6 +102,18 @@ class Scene (
     gl.enable(GL.DEPTH_TEST)
 
     camera.move(dt, keysPressed)
+
+    val carSpeed = abs(car.speed)
+
+    val speedFactor = (carSpeed * 0.015f).coerceIn(0f, 0.4f)
+    targetZoom = 1.0f - speedFactor
+
+    val zoomLerpSpeed = 3.0f
+    val zoomDelta = (targetZoom - currentZoom) * dt * zoomLerpSpeed
+    currentZoom += zoomDelta
+
+    val zoomUniform = backgroundMaterial["zoom"]
+    zoomUniform?.set(currentZoom)
 
     gl.clearColor(0.3f, 0.0f, 0.3f, 1.0f)
     gl.clearDepth(1.0f)
@@ -103,7 +124,7 @@ class Scene (
       GL.SRC_ALPHA,
     GL.ONE_MINUS_SRC_ALPHA)
 
-    
+
     car.control(dt, keysPressed)
     car.updateHierarchy()
 
