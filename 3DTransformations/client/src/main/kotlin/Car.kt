@@ -18,19 +18,19 @@ class Car(
     if ("I" in keysPressed) speed += 12f * dt
     if ("K" in keysPressed) speed -= 12f * dt
 
-    speed *= 1.0f
+    speed *= 0.98f
 
     when {
       "J" in keysPressed  -> steeringAngle = +0.1f
       "L" in keysPressed -> steeringAngle = -0.1f
-      else -> steeringAngle *= 0.1f
+      else -> steeringAngle *= 0.5f
     }
 
     heading += steeringAngle * speed * 0.4f * dt
     yaw = heading
 
-    position.x += sin(heading) * speed * dt
-    position.z += cos(heading) * speed * dt
+    position.x += sin(yaw) * speed * dt
+    position.z += cos(yaw) * speed * dt
   }
 
   fun updateHierarchy() {
@@ -39,7 +39,7 @@ class Car(
     wheels.forEach { wheel ->
       wheel.updateWheelTransform(
         carPos = position,
-        carYaw = heading,
+        carYaw = yaw,
         steerAngle = steeringAngle,
         rollSpeed = rollSpeed,
         dt = dt
