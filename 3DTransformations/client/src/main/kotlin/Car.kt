@@ -18,12 +18,12 @@ class Car(
     if ("I" in keysPressed) speed += 12f * dt
     if ("K" in keysPressed) speed -= 12f * dt
 
-    speed *= 0.98f
+    speed *= 1.0f
 
     when {
-      "J" in keysPressed  -> steeringAngle = +0.4f
-      "L" in keysPressed -> steeringAngle = -0.4f
-      else -> steeringAngle *= 0.6f
+      "J" in keysPressed  -> steeringAngle = +0.1f
+      "L" in keysPressed -> steeringAngle = -0.1f
+      else -> steeringAngle *= 0.1f
     }
 
     heading += steeringAngle * speed * 0.4f * dt

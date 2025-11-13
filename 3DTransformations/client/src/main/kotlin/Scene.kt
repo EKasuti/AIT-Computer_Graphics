@@ -61,7 +61,10 @@ class Scene (
   val car = Car(
     carMeshes,
     listOf(wheelFL, wheelFR, wheelBL, wheelBR)
-  )
+  ). apply {
+    position.set(0f, 0f, 0f)
+    heading = (PI).toFloat()
+  }
 
   val gameObjects = ArrayList<GameObject>().apply {
     add(GameObject(backgroundMesh))
