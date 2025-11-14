@@ -48,14 +48,17 @@ class Scene (
   val backgroundMaterial = Material(backgroundProgram)
   val backgroundMesh = Mesh(backgroundMaterial, texturedQuadGeometry)
 
+  // Trees
+  val treeMaterial = Material(texturedProgram).apply {
+    gl.bindTexture(GL.TEXTURE_CUBE_MAP, null)
+    this["colorTexture"]?.set(Texture2D(gl, "media/trees/tree.png"))
+  }
+
+  val treeManager = TreeManager(gl, treeMaterial)
+  
   init {
     backgroundMaterial["envTexture"]?.set(envTexture)
-    val zoomUniform = backgroundMaterial["zoom"]
-    val carPosUniform = backgroundMaterial["carPos"]
-
-    if (zoomUniform != null) {
-      zoomUniform.set(1.0f)
-    }
+    backgroundMaterial["zoom"]?.set(1.0f)
   }
 
   // Car and wheels
@@ -84,6 +87,7 @@ class Scene (
   // Zoom properties
   var currentZoom = 1.0f
   var targetZoom = 1.0f
+  var isInitialized = false
 
   val timeAtFirstFrame = Date().getTime().toFloat()
   var timeAtLastFrame = timeAtFirstFrame
@@ -96,13 +100,19 @@ class Scene (
   @Suppress("UNUSED_PARAMETER")
   fun update(keysPressed : Set<String>) {
     val timeAtThisFrame = Date().getTime().toFloat()
-    val dt = (timeAtThisFrame - timeAtLastFrame).toFloat() / 1000.0f
-    val t = (timeAtThisFrame - timeAtFirstFrame).toFloat() / 1000.0f
+    val dt = (timeAtThisFrame - timeAtLastFrame) / 1000.0f
+    val t = (timeAtThisFrame - timeAtFirstFrame) / 1000.0f
     timeAtLastFrame = timeAtThisFrame
 
     gl.enable(GL.DEPTH_TEST)
 
     camera.move(dt, keysPressed)
+    camera.followCar(car.position)
+
+    if (!isInitialized) {
+      treeManager.initialize(car.position, gameObjects)
+      isInitialized = true
+    }
 
     val carSpeed = abs(car.speed)
 
@@ -110,13 +120,10 @@ class Scene (
     targetZoom = 1.0f - speedFactor
 
     val zoomLerpSpeed = 3.0f
-    val zoomDelta = (targetZoom - currentZoom) * dt * zoomLerpSpeed
-    currentZoom += zoomDelta
+    currentZoom += (targetZoom - currentZoom) * dt * zoomLerpSpeed
 
-    val zoomUniform = backgroundMaterial["zoom"]
-    zoomUniform?.set(currentZoom)
-    val carPosUniform = backgroundMaterial["carPos"]
-    carPosUniform?.set(car.position)
+    backgroundMaterial["zoom"]?.set(currentZoom)
+    backgroundMaterial["carPos"]?.set(car.position)
 
     gl.clearColor(0.3f, 0.0f, 0.3f, 1.0f)
     gl.clearDepth(1.0f)
@@ -130,6 +137,8 @@ class Scene (
 
     car.control(dt, keysPressed)
     car.updateHierarchy()
+    
+    treeManager.update(car.position, gameObjects)
 
     for (gameObject in gameObjects) {
       gameObject.move(dt, t, keysPressed, gameObjects)

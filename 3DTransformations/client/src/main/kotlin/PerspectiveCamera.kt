@@ -29,6 +29,12 @@ class PerspectiveCamera(vararg programs : Program) : UniformProvider("camera") {
   val viewProjMatrix by Mat4()
   val rayDirMatrix by Mat4()
 
+  // Car following parameters
+  var followTarget: Vec3? = null
+  var followDistance = 50.0f
+  var followHeight = 8.0f
+  var followSmoothing = 5.0f
+
   companion object {
     val worldUp = Vec3(0.0f, 1.0f, 0.0f)
   }
@@ -57,7 +63,6 @@ class PerspectiveCamera(vararg programs : Program) : UniformProvider("camera") {
           0.0f ,    0.0f ,  (n+f)/(n-f) ,  -1.0f, 
           0.0f ,    0.0f ,  2*n*f/(n-f) ,   0.0f)
 
-    //LABTODO: rayDirMatrix
     rayDirMatrix.set().translate(position)
     rayDirMatrix *= viewProjMatrix
     rayDirMatrix.invert()
@@ -69,7 +74,30 @@ class PerspectiveCamera(vararg programs : Program) : UniformProvider("camera") {
   } 
 
   fun move(dt : Float, keysPressed : Set<String>) { 
+    // Handle camera following
+    followTarget?.let { target ->
+      val targetPos = Vec3(
+        target.x,
+        target.y + followHeight,
+        target.z + followDistance
+      )
+      
+      // Camera positions
+      position.x += (targetPos.x - position.x) * dt * followSmoothing
+      position.y += (targetPos.y - position.y) * dt * followSmoothing
+      position.z += (targetPos.z - position.z) * dt * followSmoothing
+      
+      // Look at the car
+      val lookDir = target - position
+      lookDir.normalize()
+      
+      yaw = kotlin.math.atan2(lookDir.x, -lookDir.z)
+      pitch = -kotlin.math.asin(lookDir.y)
+    }
+    
+    // Manual camera control
     if(isDragging) { 
+      followTarget = null // Disable following
       yaw -= mouseDelta.x * 0.002f
       pitch -= mouseDelta.y * 0.002f 
       if(pitch > 3.14f/2.0f) { 
@@ -80,30 +108,52 @@ class PerspectiveCamera(vararg programs : Program) : UniformProvider("camera") {
       } 
       mouseDelta.set()
     }
+    
+    var manualControl = false
     if("W" in keysPressed) { 
-      position += ahead * (speed * dt) 
+      followTarget = null // Disable following
+      position += ahead * (speed * dt)
+      manualControl = true
     } 
     if("S" in keysPressed) { 
+      followTarget = null
       position -= ahead * (speed * dt)
+      manualControl = true
     } 
     if("D" in keysPressed) { 
-      position += right * (speed * dt) 
+      followTarget = null
+      position += right * (speed * dt)
+      manualControl = true
     } 
     if("A" in keysPressed) { 
-      position -= right * (speed * dt) 
+      followTarget = null
+      position -= right * (speed * dt)
+      manualControl = true
     } 
     if("E" in keysPressed) { 
-      position += up * (speed * dt) 
+      followTarget = null
+      position += up * (speed * dt)
+      manualControl = true
     } 
     if("Q" in keysPressed) { 
-      position -= up * (speed * dt) 
+      followTarget = null
+      position -= up * (speed * dt)
+      manualControl = true
     } 
 
     update()
     ahead = (Vec3(0.0f, 0.0f, -1.0f).xyz0 * rotationMatrix).xyz
     right = (Vec3(1.0f, 0.0f,  0.0f).xyz0 * rotationMatrix).xyz
     up    = (Vec3(0.0f, 1.0f,  0.0f).xyz0 * rotationMatrix).xyz    
-  } 
+  }
+  
+  fun followCar(carPosition: Vec3) {
+    followTarget = carPosition
+  }
+  
+  fun stopFollowing() {
+    followTarget = null
+  }
   
   fun mouseDown() { 
     isDragging = true 
