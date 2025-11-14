@@ -15,8 +15,8 @@ class Car(
   fun control(dt: Float, keysPressed: Set<String>) {
     this.dt = dt
 
-    if ("I" in keysPressed) speed += 20f * dt
-    if ("K" in keysPressed) speed -= 20f * dt
+    if ("I" in keysPressed) speed += 40f * dt
+    if ("K" in keysPressed) speed -= 40f * dt
 
     speed *= 0.98f
 
