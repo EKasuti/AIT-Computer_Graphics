@@ -35,6 +35,10 @@ uniform struct{
 void main(void) {
   vec3 noise = noiseGrad(modelPosition.xyz * 50.0) * 0.05;
   vec3 normalPertubed = normal + noise;
+  vec4 finalColour = texture(material.colorTexture, texCoord);
+  if (finalColour.a < 0.01) {
+    discard;
+  }
   fragmentColor = texture(material.colorTexture, texCoord);
 }
 
