@@ -73,6 +73,11 @@ class Scene (
     gameObjects += GameObject(*slowpokeMeshes)
     gameObjects += GameObject(backgroundMesh)
     gameObjects += GameObject(groundMesh)
+    
+    // Reflective Slowpoke with environment mapping
+    gameObjects += GameObject(*envmapeddSlowpokeMeshes).apply {
+      position.set(-5.0f, 0.0f, 0.0f)
+    }
   }
 
   val lights = Array<Light>(8) { Light(it) }
