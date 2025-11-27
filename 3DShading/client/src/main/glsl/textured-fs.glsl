@@ -13,6 +13,9 @@ uniform struct {
 uniform struct {
   vec4 position;
   vec3 powerDensity;
+  vec3 direction;
+  float cosSpotCutoff;
+  float spotExponent;
 } lights[8];
 
 out vec4 fragmentColor;
@@ -32,11 +35,20 @@ void main(void) {
 
   fragmentColor.rgb = vec3(0.0, 0.0, 0.0);
 
-  for (int i = 0; i < 2; i++) {
+  for (int i = 0; i < 8; i++) {
     vec3 lightDiff = lights[i].position.xyz - worldPosition.xyz * lights[i].position.w;
     vec3 lightDir = normalize (lightDiff); // lights[i].position.xyz
     float distanceSquared = dot(lightDiff, lightDiff); 
     vec3 powerDensity = lights[i].powerDensity / distanceSquared; //lights[i].powerDensity
+
+    if(lights[i].cosSpotCutoff > 0.0) {
+       float cosAngle = dot(-lightDir, normalize(lights[i].direction));
+       if(cosAngle < lights[i].cosSpotCutoff) {
+         powerDensity = vec3(0.0);
+       } else {
+         powerDensity *= pow(cosAngle, lights[i].spotExponent);
+       }
+    }
 
     fragmentColor.rgb += shade(normal, lightDir, powerDensity, 
                                 texture(material.colorTexture, texCoord.xy/texCoord.w).rgb);

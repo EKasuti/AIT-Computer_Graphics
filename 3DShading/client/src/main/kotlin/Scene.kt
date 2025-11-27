@@ -26,6 +26,7 @@ class Scene (
   val envmappedProgram = Program(gl, vsTextured, fsEnvmapped)
 
   val texturedQuadGeometry = TexturedQuadGeometry(gl)
+  val groundGeometry = GroundGeometry(gl)
 
   val gameObjects = ArrayList<GameObject>()
 
@@ -61,24 +62,38 @@ class Scene (
   val backgroundMaterial = Material(backgroundProgram)
   val backgroundMesh = Mesh(backgroundMaterial, texturedQuadGeometry)
 
+  val groundMaterial = Material(texturedProgram).apply{
+    this["colorTexture"]?.set(Texture2D(gl, "media/pattern.jpg"))
+  }
+  val groundMesh = Mesh(groundMaterial, groundGeometry)
+
   init{
     backgroundMaterial["envTexture"]?.set( this.envTexture )
 
     gameObjects += GameObject(*slowpokeMeshes)
     gameObjects += GameObject(backgroundMesh)
+    gameObjects += GameObject(groundMesh)
   }
 
   val lights = Array<Light>(8) { Light(it) }
   init{
     lights[0].position.set(1.0f, 1.0f, 1.0f, 0.0f).normalize();
     lights[0].powerDensity.set(1.0f, 1.0f, 1.0f);
-    lights[1].position.set(10.0f, 10.0f, 10.0f, 1.0f).normalize();
+    
+    lights[1].position.set(10.0f, 10.0f, 10.0f, 1.0f);
     lights[1].powerDensity.set(1.0f, 0.0f, 1.0f);
+
+    lights[2].position.set(0.0f, 0.0f, 0.0f, 1.0f);
+    lights[2].powerDensity.set(50.0f, 50.0f, 50.0f); // Strong headlight
+    lights[2].cosSpotCutoff.set(0.8f);
+    lights[2].spotExponent.set(5.0f);
   }
 
 
   // LABTODO: replace with 3D camera
   val camera = PerspectiveCamera().apply{
+    position.set(0.0f, 10.0f, 20.0f)
+    pitch = -0.5f
     update()
   }
 
@@ -104,7 +119,13 @@ class Scene (
 
     //LABTODO: move camera
     camera.move(dt, keysPressed)
-    lights[1].position.set(sin(t), cos(t), cos(2f*t), 0f).normalize()
+    
+    // Light 1: Moving Point Light
+    lights[1].position.set(sin(t)*10.0f, 5.0f, cos(t)*10.0f, 1.0f)
+    
+    // Light 2: Headlight
+    lights[2].position.set(camera.position.x, camera.position.y, camera.position.z, 1.0f)
+    lights[2].direction.set(camera.ahead)
     
     gl.clearColor(0.3f, 0.0f, 0.3f, 1.0f)//## red, green, blue, alpha in [0, 1]
     gl.clearDepth(1.0f)//## will be useful in 3D ˙HUN˙ 3D-ben lesz hasznos

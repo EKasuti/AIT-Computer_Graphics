@@ -57,13 +57,9 @@ class PerspectiveCamera() : UniformProvider("camera") {
           0.0f ,    0.0f ,  (n+f)/(n-f) ,  -1.0f, 
           0.0f ,    0.0f ,  2*n*f/(n-f) ,   0.0f)
 
-    // rayDirMatrix: inverse of view-projection without translation
-    // This converts screen-space positions to view directions for the background
-    rayDirMatrix.set(viewProjMatrix).invert()
-    // Remove translation component to get only rotation
-    rayDirMatrix.storage[12] = 0.0f
-    rayDirMatrix.storage[13] = 0.0f
-    rayDirMatrix.storage[14] = 0.0f
+    //LABTODO: rayDirMatrix
+    rayDirMatrix.set(rotationMatrix)
+    rayDirMatrix.scale(1.0f/xScale, 1.0f/yScale, -2.0f)
   }
 
   fun setAspectRatio(ar : Float) { 
