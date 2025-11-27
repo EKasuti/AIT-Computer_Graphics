@@ -4,6 +4,7 @@ import vision.gears.webglmath.Vec3
 import vision.gears.webglmath.Mat4
 import kotlin.math.tan
 import org.w3c.dom.events.*
+import org.khronos.webgl.set
 
 class PerspectiveCamera() : UniformProvider("camera") {
 
@@ -56,10 +57,13 @@ class PerspectiveCamera() : UniformProvider("camera") {
           0.0f ,    0.0f ,  (n+f)/(n-f) ,  -1.0f, 
           0.0f ,    0.0f ,  2*n*f/(n-f) ,   0.0f)
 
-    //LABTODO: rayDirMatrix
-    rayDirMatrix.set().translate(position)
-    rayDirMatrix *= viewProjMatrix
-    rayDirMatrix.invert()
+    // rayDirMatrix: inverse of view-projection without translation
+    // This converts screen-space positions to view directions for the background
+    rayDirMatrix.set(viewProjMatrix).invert()
+    // Remove translation component to get only rotation
+    rayDirMatrix.storage[12] = 0.0f
+    rayDirMatrix.storage[13] = 0.0f
+    rayDirMatrix.storage[14] = 0.0f
   }
 
   fun setAspectRatio(ar : Float) { 
