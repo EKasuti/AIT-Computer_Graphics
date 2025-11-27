@@ -87,6 +87,12 @@ class Scene (
     lights[2].powerDensity.set(50.0f, 50.0f, 50.0f); // Strong headlight
     lights[2].cosSpotCutoff.set(0.8f);
     lights[2].spotExponent.set(5.0f);
+
+    lights[3].position.set(15.0f, 20.0f, 0.0f, 1.0f); // Stationary spotlight from above
+    lights[3].direction.set(0.0f, -1.0f, 0.0f); // Pointing down
+    lights[3].powerDensity.set(100.0f, 80.0f, 60.0f); // Warm spotlight
+    lights[3].cosSpotCutoff.set(0.9f); // Narrower beam
+    lights[3].spotExponent.set(15.0f); // More focused
   }
 
 
