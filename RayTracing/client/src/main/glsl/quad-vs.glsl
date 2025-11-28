@@ -5,6 +5,7 @@ out vec4 texCoord;
 out vec4 rayDir;
 
 uniform struct {
+  vec3 position;
   mat4 rayDirMatrix;
 } camera;
 

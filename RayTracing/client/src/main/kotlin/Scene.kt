@@ -30,6 +30,20 @@ class Scene (
     gameObjects += GameObject(backgroundMesh)
   }
 
+  val quadrics = Array<Quadric>(16) { Quadric(it) }
+
+  init{
+    for (i in 0..15) {
+      val random = Vec3();
+      random.randomize(Vec3(-9.0f, -9.0f, -9.0f), Vec3 (9.0f, 9.0f, 9.0f))
+      quadrics[i].surface.set(Quadric.unitSphere.clone())
+      quadrics[i].surface.transform(Mat4().set().scale(3.0f, 3.0f, 3.0f).translate(random))
+      quadrics[i].clipper.set(Quadric.unitSlab.clone())
+      quadrics[i].clipper.transform(Mat4().set().scale(1.0f, 0.5f, 1.0f))
+    }
+  }
+
+
   val camera = PerspectiveCamera(*Program.all).apply{
     position.set(1f, 1f)
   }
@@ -65,7 +79,7 @@ class Scene (
     for (gameObject in gameObjects) {
       gameObject.move(dt, t, keysPressed, gameObjects)
       gameObject.update()
-      gameObject.draw(camera)
+      gameObject.draw(camera, *quadrics)
     }
   }
 }
