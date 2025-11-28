@@ -18,6 +18,11 @@ uniform struct {
   mat4 clipper;
 } quadrics[16];
 
+uniform struct {
+  vec4 position;
+  vec3 powerDensity;
+} lights[1];
+
 float bestHit (vec4 e, vec4 d, out int bestI) {
     bestI = 0;
     return -1.0;
@@ -89,6 +94,8 @@ void main(void) {
 		}
 	}
 
+	vec3 diffuse = vec3(0.0, 0.0, 0.0);
+
 	if (bestT > 0.0 && bestT < 10000.0) {
 		float t = bestT;
 		mat4 A = quadrics[bestI].surface;
@@ -101,11 +108,15 @@ void main(void) {
 			normal *= -1.0;
 		}
 
+		vec3 lightDir = normalize(lights[0].position.xyz);
+		float cosTheta = max(dot(normal, lightDir), 0.0);
+		diffuse = lights[0].powerDensity * cosTheta;
+
 		e = vec4 (hit.xyz + normal * 0.0001, 1.0);
 		d = vec4 (reflectedDir.xyz, 0.0);
 
 		bestT = 10000.0;
 	}
 
-	fragmentColor = texture (material.envTexture, d.xyz);
+	fragmentColor = texture (material.envTexture, d.xyz) + vec4(diffuse, 0.0);
 }

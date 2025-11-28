@@ -43,6 +43,12 @@ class Scene (
     }
   }
 
+  val lights = Array<Light>(1) { Light(it) }
+  init{
+    lights[0].position.set(1.0f, 1.0f, 1.0f, 0.0f).normalize()
+    lights[0].powerDensity.set(1.0f, 1.0f, 1.0f)
+  }
+
 
   val camera = PerspectiveCamera(*Program.all).apply{
     position.set(1f, 1f)
@@ -79,7 +85,7 @@ class Scene (
     for (gameObject in gameObjects) {
       gameObject.move(dt, t, keysPressed, gameObjects)
       gameObject.update()
-      gameObject.draw(camera, *quadrics)
+      gameObject.draw(camera, *quadrics, *lights)
     }
   }
 }
