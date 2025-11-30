@@ -43,10 +43,16 @@ class Scene (
     }
   }
 
-  val lights = Array<Light>(1) { Light(it) }
+  val lights = Array<Light>(3) { Light(it) }
   init{
     lights[0].position.set(1.0f, 1.0f, 1.0f, 0.0f).normalize()
     lights[0].powerDensity.set(1.0f, 1.0f, 1.0f)
+
+    lights[1].position.set(-1.0f, 1.0f, 1.0f, 0.0f).normalize()
+    lights[1].powerDensity.set(0.5f, 0.0f, 0.5f)
+
+    lights[2].position.set(0.0f, 1.0f, -1.0f, 0.0f).normalize()
+    lights[2].powerDensity.set(0.2f, 0.2f, 0.2f)
   }
 
 

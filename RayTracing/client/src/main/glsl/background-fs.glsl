@@ -21,7 +21,7 @@ uniform struct {
 uniform struct {
   vec4 position;
   vec3 powerDensity;
-} lights[1];
+} lights[3];
 
 float bestHit (vec4 e, vec4 d, out int bestI) {
     bestI = 0;
@@ -108,9 +108,11 @@ void main(void) {
 			normal *= -1.0;
 		}
 
-		vec3 lightDir = normalize(lights[0].position.xyz);
-		float cosTheta = max(dot(normal, lightDir), 0.0);
-		diffuse = lights[0].powerDensity * cosTheta;
+		for(int i=0; i<3; i++) {
+			vec3 lightDir = normalize(lights[i].position.xyz);
+			float cosTheta = max(dot(normal, lightDir), 0.0);
+			diffuse += lights[i].powerDensity * cosTheta;
+		}
 
 		e = vec4 (hit.xyz + normal * 0.0001, 1.0);
 		d = vec4 (reflectedDir.xyz, 0.0);
