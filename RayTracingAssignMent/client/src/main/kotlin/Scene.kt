@@ -23,6 +23,12 @@ class Scene (
   val backgroundMesh = Mesh(backgroundMaterial, texturedQuadGeometry)
   init{
     backgroundMaterial["envTexture"]?.set( this.envTexture )
+    // Light source (top right)
+    backgroundMaterial["lightPositions[0]"]?.set( Vec3(15.0f, 20.0f, 5.0f) )
+    backgroundMaterial["lightColors[0]"]?.set( Vec3(1.0f, 1.0f, 1.0f) )
+    // Light source (bottom right)
+    backgroundMaterial["lightPositions[1]"]?.set( Vec3(15.0f, 5.0f, 5.0f) )
+    backgroundMaterial["lightColors[1]"]?.set( Vec3(1.0f, 1.0f, 1.0f) )
   }
   val gameObjects = ArrayList<GameObject>()
 
@@ -33,16 +39,30 @@ class Scene (
   val quadrics = Array<Quadric>(16) { Quadric(it) }
 
   init{
-    for (i in 0..15) {
-      val random = Vec3();
-      random.randomize(Vec3(-9.0f, -9.0f, -9.0f), Vec3 (9.0f, 9.0f, 9.0f))
-      quadrics[i].surface.set(Quadric.unitSphere.clone())
-      quadrics[i].surface.transform(Mat4().set().scale(3.0f, 3.0f, 3.0f).translate(random))
-      quadrics[i].clipper.set(Quadric.unitSlab.clone())
-      quadrics[i].clipper.transform(Mat4().set().scale(1.0f, 0.5f, 1.0f))
-    }
-  }
+    // Light sphere (top right)
+    quadrics[0].surface.set(Quadric.unitSphere.clone())
+    quadrics[0].surface.transform(Mat4().set().scale(2.0f, 2.0f, 2.0f).translate(Vec3(15.0f, 20.0f, 5.0f)))
+    quadrics[0].clipper.set(Quadric.unitSlab.clone())
+    quadrics[0].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f))
 
+    // Light sphere (bottom right)
+    quadrics[1].surface.set(Quadric.unitSphere.clone())
+    quadrics[1].surface.transform(Mat4().set().scale(2.0f, 2.0f, 2.0f).translate(Vec3(15.0f, -8.0f, 5.0f)))
+    quadrics[1].clipper.set(Quadric.unitSlab.clone())
+    quadrics[1].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f))
+
+    // Sphere 1 - casts shadow
+    quadrics[2].surface.set(Quadric.unitSphere.clone())
+    quadrics[2].surface.transform(Mat4().set().scale(3.0f, 3.0f, 3.0f).translate(Vec3(5.0f, 5.0f, 0.0f)))
+    quadrics[2].clipper.set(Quadric.unitSlab.clone())
+    quadrics[2].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f))
+
+    // Spherre 2 - receives shadow
+    quadrics[3].surface.set(Quadric.unitSphere.clone())
+    quadrics[3].surface.transform(Mat4().set().scale(3.0f, 3.0f, 3.0f).translate(Vec3(-5.0f, 0.0f, 0.0f)))
+    quadrics[3].clipper.set(Quadric.unitSlab.clone())
+    quadrics[3].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f))
+  }
 
   val camera = PerspectiveCamera(*Program.all).apply{
     position.set(1f, 1f)

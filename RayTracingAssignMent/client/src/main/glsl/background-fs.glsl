@@ -18,6 +18,10 @@ uniform struct {
   mat4 clipper;
 } quadrics[16];
 
+// Light sources for shadows
+uniform vec3 lightPositions[3];
+uniform vec3 lightColors[3];
+
 float bestHit (vec4 e, vec4 d, out int bestI) {
     bestI = 0;
     return -1.0;
@@ -90,6 +94,12 @@ void main(void) {
 	}
 
 	if (bestT > 0.0 && bestT < 10000.0) {
+		// Light sphere (white)
+		if (bestI == 0 || bestI == 1) {
+			fragmentColor = vec4(1.0, 1.0, 1.0, 1.0);
+			return;
+		}
+
 		float t = bestT;
 		mat4 A = quadrics[bestI].surface;
 		vec4 hit = e + d * t;
@@ -101,10 +111,46 @@ void main(void) {
 			normal *= -1.0;
 		}
 
+		// Shadows (two light sources)
+		float shadow1 = 1.0;
+		float shadow2 = 1.0;
+
+		// Light 1 shadow check
+		vec3 toLight1 = lightPositions[0] - hit.xyz;
+		vec3 lightDir1 = normalize(toLight1);
+		for (int i = 0; i < 16; i++) {
+			float tShadow = intersectQuadric(
+				vec4(hit.xyz + normal * 0.001, 1.0),
+				vec4(lightDir1, 0.0),
+				quadrics[i].surface, quadrics[i].clipper);
+			if (tShadow > 0.0 && tShadow < length(toLight1)) {
+				shadow1 = 0.0; break;
+			}
+		}
+
+		// Light 2 shadow check
+		vec3 toLight2 = lightPositions[1] - hit.xyz;
+		vec3 lightDir2 = normalize(toLight2);
+		for (int i = 0; i < 16; i++) {
+			float tShadow = intersectQuadric(
+				vec4(hit.xyz + normal * 0.001, 1.0),
+				vec4(lightDir2, 0.0),
+				quadrics[i].surface, quadrics[i].clipper);
+			if (tShadow > 0.0 && tShadow < length(toLight2)) {
+				shadow2 = 0.0; break;
+			}
+		}
+
 		e = vec4 (hit.xyz + normal * 0.0001, 1.0);
 		d = vec4 (reflectedDir.xyz, 0.0);
 
-		bestT = 10000.0;
+		// DEBUG: Green shadow
+		if (shadow1 > 0.5 || shadow2 > 0.5) {
+			fragmentColor = vec4(0.0, 1.0, 0.0, 1.0); // GREEN (shadow)
+		} else {
+			fragmentColor = texture(material.envTexture, d.xyz);
+		}
+		return;
 	}
 
 	fragmentColor = texture (material.envTexture, d.xyz);
