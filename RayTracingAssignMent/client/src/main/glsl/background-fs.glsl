@@ -88,6 +88,20 @@ vec4 renderSnowmanNose(vec4 hit, vec3 normal) {
 	return vec4(orangeColor, 1.0);
 }
 
+vec4 renderSilverBauble(vec4 hit, vec3 normal, vec3 rayDir) {
+	vec3 reflectedDir = reflect(rayDir, normal);
+	vec3 envColor = texture(material.envTexture, reflectedDir).rgb;
+	// Silver tint
+	return vec4(envColor * vec3(0.95, 0.95, 0.95), 1.0);
+}
+
+vec4 renderGoldenBell(vec4 hit, vec3 normal, vec3 rayDir) {
+	vec3 reflectedDir = reflect(rayDir, normal);
+	vec3 envColor = texture(material.envTexture, reflectedDir).rgb;
+	// Gold tint
+	return vec4(envColor * vec3(1.0, 0.84, 0.0), 1.0);
+}
+
 void main(void) {
 	vec4 e = vec4(camera.position, 1);
 	vec4 d = vec4(normalize(rayDir.xyz), 0);
@@ -141,13 +155,33 @@ void main(void) {
 			return;
 		}
 
-		// Orange cone nose
-		if (bestI == 6) {
+		// Orange cone nose AND Pile of Oranges
+		if (bestI == 6 || (bestI >= 7 && bestI <= 10)) {
 			vec4 hit = e + d * bestT;
 			vec3 normal = normalize((hit * quadrics[bestI].surface + quadrics[bestI].surface * hit).xyz);
 			if (dot(normal, -d.xyz) < 0.0) normal *= -1.0;
 
 			fragmentColor = renderSnowmanNose(hit, normal);
+			return;
+		}
+
+		// Silver Baubles (Metallic Reflection)
+		if (bestI == 11 || bestI == 12) {
+			vec4 hit = e + d * bestT;
+			vec3 normal = normalize((hit * quadrics[bestI].surface + quadrics[bestI].surface * hit).xyz);
+			if (dot(normal, -d.xyz) < 0.0) normal *= -1.0;
+
+			fragmentColor = renderSilverBauble(hit, normal, d.xyz);
+			return;
+		}
+
+		// Golden Bells (Metallic Reflection)
+		if (bestI == 13 || bestI == 14) {
+			vec4 hit = e + d * bestT;
+			vec3 normal = normalize((hit * quadrics[bestI].surface + quadrics[bestI].surface * hit).xyz);
+			if (dot(normal, -d.xyz) < 0.0) normal *= -1.0;
+
+			fragmentColor = renderGoldenBell(hit, normal, d.xyz);
 			return;
 		}
 
