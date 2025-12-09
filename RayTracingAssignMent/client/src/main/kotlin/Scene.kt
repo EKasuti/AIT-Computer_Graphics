@@ -77,14 +77,14 @@ class Scene (
     quadrics[5].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f))
 
     // Orange cone nose (tiny carrot)
-    quadrics[6].surface.set(Quadric.cone.clone())
-    quadrics[6].surface.transform(Mat4().set().scale(0.05f, 0.05f, 0.2f).translate(Vec3(-10.0f, 5.0f, 2.0f)))
-    quadrics[6].clipper.set(Quadric.zPlane.clone())
-    quadrics[6].clipper.transform(Mat4().set().translate(Vec3(-10.0f, 5.0f, 2.0f)))
+    // quadrics[6].surface.set(Quadric.cone.clone())
+    // quadrics[6].surface.transform(Mat4().set().scale(0.05f, 0.05f, 0.2f).translate(Vec3(-10.0f, 5.0f, 2.0f)))
+    // quadrics[6].clipper.set(Quadric.zPlane.clone())
+    // quadrics[6].clipper.transform(Mat4().set().translate(Vec3(-10.0f, 5.0f, 2.0f)))
   }
 
   val camera = PerspectiveCamera(*Program.all).apply{
-    position.set(1f, 1f)
+    position.set(0f, 5f, 40f)
   }
 
   val timeAtFirstFrame = Date().getTime()
