@@ -101,6 +101,32 @@ class Scene (
     quadrics[10].surface.transform(Mat4().set().scale(0.5f, 0.5f, 0.5f).translate(Vec3(-5.5f, -4.2f, 2.0f)))
     quadrics[10].clipper.set(Quadric.unitSlab.clone())
     quadrics[10].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f))
+
+    // Silver Baubles
+    // Bauble 1
+    quadrics[11].surface.set(Quadric.unitSphere.clone())
+    quadrics[11].surface.transform(Mat4().set().scale(0.8f, 0.8f, 0.8f).translate(Vec3(-2.0f, -4.0f, 2.0f)))
+    quadrics[11].clipper.set(Quadric.unitSlab.clone())
+    quadrics[11].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f))
+
+    // Bauble 2
+    quadrics[12].surface.set(Quadric.unitSphere.clone())
+    quadrics[12].surface.transform(Mat4().set().scale(0.8f, 0.8f, 0.8f).translate(Vec3(-1.0f, -3.0f, 0.0f)))
+    quadrics[12].clipper.set(Quadric.unitSlab.clone())
+    quadrics[12].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f))
+
+    // Golden Bells
+    // Bell 1
+    quadrics[13].surface.set(Quadric.unitSphere.clone())
+    quadrics[13].surface.transform(Mat4().set().scale(0.8f, 0.8f, 0.8f).translate(Vec3(2.0f, -4.0f, 2.0f)))
+    quadrics[13].clipper.set(Quadric.unitSlab.clone())
+    quadrics[13].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f))
+
+    // Bell 2
+    quadrics[14].surface.set(Quadric.unitSphere.clone())
+    quadrics[14].surface.transform(Mat4().set().scale(0.8f, 0.8f, 0.8f).translate(Vec3(3.0f, -3.0f, 0.0f)))
+    quadrics[14].clipper.set(Quadric.unitSlab.clone())
+    quadrics[14].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f))
   }
 
   val camera = PerspectiveCamera(*Program.all).apply{
