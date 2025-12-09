@@ -45,54 +45,42 @@ class Scene (
     quadrics[0].clipper.set(Quadric.unitSlab.clone())
     quadrics[0].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f))
 
-    // Light sphere (bottom right)
+    // SNOWMAN
+    // Bottom sphere (largest)
     quadrics[1].surface.set(Quadric.unitSphere.clone())
-    quadrics[1].surface.transform(Mat4().set().scale(2.0f, 2.0f, 2.0f).translate(Vec3(15.0f, -8.0f, 5.0f)))
+    quadrics[1].surface.transform(Mat4().set().scale(2.5f, 2.5f, 2.5f).translate(Vec3(-10.0f, -3.0f, 0.0f)))
     quadrics[1].clipper.set(Quadric.unitSlab.clone())
     quadrics[1].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f))
 
-    // Sphere 1 - casts shadow
+    // Middle sphere
     quadrics[2].surface.set(Quadric.unitSphere.clone())
-    quadrics[2].surface.transform(Mat4().set().scale(3.0f, 3.0f, 3.0f).translate(Vec3(5.0f, 5.0f, 0.0f)))
+    quadrics[2].surface.transform(Mat4().set().scale(2.0f, 2.0f, 2.0f).translate(Vec3(-10.0f, 1.5f, 0.0f)))
     quadrics[2].clipper.set(Quadric.unitSlab.clone())
     quadrics[2].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f))
 
-    // Spherre 2 - receives shadow
+    // Head sphere (smallest)
     quadrics[3].surface.set(Quadric.unitSphere.clone())
-    quadrics[3].surface.transform(Mat4().set().scale(3.0f, 3.0f, 3.0f).translate(Vec3(-5.0f, 0.0f, 0.0f)))
+    quadrics[3].surface.transform(Mat4().set().scale(1.5f, 1.5f, 1.5f).translate(Vec3(-10.0f, 5.0f, 0.0f)))
     quadrics[3].clipper.set(Quadric.unitSlab.clone())
     quadrics[3].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f))
 
-    // SNOWMAN
-    // Bottom sphere (largest)
+    // Coal eyes (left)
     quadrics[4].surface.set(Quadric.unitSphere.clone())
-    quadrics[4].surface.transform(Mat4().set().scale(2.5f, 2.5f, 2.5f).translate(Vec3(-10.0f, -3.0f, 0.0f)))
+    quadrics[4].surface.transform(Mat4().set().scale(0.3f, 0.3f, 0.3f).translate(Vec3(-10.5f, 5.5f, 1.2f)))
     quadrics[4].clipper.set(Quadric.unitSlab.clone())
     quadrics[4].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f))
 
-    // Middle sphere
+    // Coal eyes (right)
     quadrics[5].surface.set(Quadric.unitSphere.clone())
-    quadrics[5].surface.transform(Mat4().set().scale(2.0f, 2.0f, 2.0f).translate(Vec3(-10.0f, 1.5f, 0.0f)))
+    quadrics[5].surface.transform(Mat4().set().scale(0.3f, 0.3f, 0.3f).translate(Vec3(-9.5f, 5.5f, 1.2f)))
     quadrics[5].clipper.set(Quadric.unitSlab.clone())
     quadrics[5].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f))
 
-    // Head sphere (smallest)
-    quadrics[6].surface.set(Quadric.unitSphere.clone())
-    quadrics[6].surface.transform(Mat4().set().scale(1.5f, 1.5f, 1.5f).translate(Vec3(-10.0f, 5.0f, 0.0f)))
-    quadrics[6].clipper.set(Quadric.unitSlab.clone())
-    quadrics[6].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f))
-
-    // Coal eyes (left)
-    quadrics[7].surface.set(Quadric.unitSphere.clone())
-    quadrics[7].surface.transform(Mat4().set().scale(0.3f, 0.3f, 0.3f).translate(Vec3(-10.5f, 5.5f, 1.2f)))
-    quadrics[7].clipper.set(Quadric.unitSlab.clone())
-    quadrics[7].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f))
-
-    // Coal eyes (right)
-    quadrics[8].surface.set(Quadric.unitSphere.clone())
-    quadrics[8].surface.transform(Mat4().set().scale(0.3f, 0.3f, 0.3f).translate(Vec3(-9.5f, 5.5f, 1.2f)))
-    quadrics[8].clipper.set(Quadric.unitSlab.clone())
-    quadrics[8].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f))
+    // Orange cone nose (tiny carrot)
+    quadrics[6].surface.set(Quadric.cone.clone())
+    quadrics[6].surface.transform(Mat4().set().scale(0.05f, 0.05f, 0.2f).translate(Vec3(-10.0f, 5.0f, 2.0f)))
+    quadrics[6].clipper.set(Quadric.zPlane.clone())
+    quadrics[6].clipper.transform(Mat4().set().translate(Vec3(-10.0f, 5.0f, 2.0f)))
   }
 
   val camera = PerspectiveCamera(*Program.all).apply{

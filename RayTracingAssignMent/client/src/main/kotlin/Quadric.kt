@@ -27,6 +27,20 @@ class Quadric(i : Int) : UniformProvider("""quadrics[${i}]""") {
         0.0f, 0.0f, 0.0f, 0.0f,
         0.0f, 0.0f, 0.0f, -0.0f
       )            
+    val cone =
+      Mat4(
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, -1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 0.0f
+      )
+    val zPlane =
+      Mat4(
+        0.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, -1.0f,
+        0.0f, 0.0f, -1.0f, 0.0f
+      )
   }
 
 }

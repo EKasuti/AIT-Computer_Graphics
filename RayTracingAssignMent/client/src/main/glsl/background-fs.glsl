@@ -78,6 +78,16 @@ vec4 renderSnowmanEyes() {
 	return vec4(0.1, 0.1, 0.1, 1.0); // Black coal
 }
 
+vec4 renderSnowmanNose(vec4 hit, vec3 normal) {
+	// Diffuse lighting from both lights
+	vec3 toLight1 = normalize(lightPositions[0] - hit.xyz);
+	vec3 toLight2 = normalize(lightPositions[1] - hit.xyz);
+	float diffuse = max(dot(normal, toLight1), 0.0) + max(dot(normal, toLight2), 0.0);
+
+	vec3 orangeColor = vec3(1.0, 0.5, 0.0) * (0.3 + diffuse * 0.7);
+	return vec4(orangeColor, 1.0);
+}
+
 void main(void) {
 	vec4 e = vec4(camera.position, 1);
 	vec4 d = vec4(normalize(rayDir.xyz), 0);
@@ -110,13 +120,13 @@ void main(void) {
 
 	if (bestT > 0.0 && bestT < 10000.0) {
 		// Light sphere (white)
-		if (bestI == 0 || bestI == 1) {
+		if (bestI == 0) {
 			fragmentColor = vec4(1.0, 1.0, 1.0, 1.0);
 			return;
 		}
 
 		// Snowman body (white diffuse)
-		if (bestI >= 4 && bestI <= 6) {
+		if (bestI >= 1 && bestI <= 3) {
 			vec4 hit = e + d * bestT;
 			vec3 normal = normalize((hit * quadrics[bestI].surface + quadrics[bestI].surface * hit).xyz);
 			if (dot(normal, -d.xyz) < 0.0) normal *= -1.0;
@@ -126,8 +136,18 @@ void main(void) {
 		}
 
 		// Coal eyes (black diffuse)
-		if (bestI == 7 || bestI == 8) {
+		if (bestI == 4 || bestI == 5) {
 			fragmentColor = renderSnowmanEyes();
+			return;
+		}
+
+		// Orange cone nose
+		if (bestI == 6) {
+			vec4 hit = e + d * bestT;
+			vec3 normal = normalize((hit * quadrics[bestI].surface + quadrics[bestI].surface * hit).xyz);
+			if (dot(normal, -d.xyz) < 0.0) normal *= -1.0;
+
+			fragmentColor = renderSnowmanNose(hit, normal);
 			return;
 		}
 
