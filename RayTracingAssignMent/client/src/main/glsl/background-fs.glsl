@@ -141,8 +141,8 @@ void main(void) {
 			return;
 		}
 
-		// Orange cone nose
-		if (bestI == 6) {
+		// Orange cone nose AND Pile of Oranges
+		if (bestI == 6 || (bestI >= 7 && bestI <= 10)) {
 			vec4 hit = e + d * bestT;
 			vec3 normal = normalize((hit * quadrics[bestI].surface + quadrics[bestI].surface * hit).xyz);
 			if (dot(normal, -d.xyz) < 0.0) normal *= -1.0;

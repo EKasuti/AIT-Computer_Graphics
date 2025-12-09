@@ -25,7 +25,8 @@
 
 - [ ] Animation
 
-- [ ] A pile of oranges
+- [x] A pile of oranges
+  - Four orange diffuse spheres piled up
 
 - [ ] Icicles
 
