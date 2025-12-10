@@ -3,9 +3,17 @@ import vision.gears.webglmath.Mat4
 
 class Quadric(i : Int) : UniformProvider("""quadrics[${i}]""") {
   val surface by QuadraticMat4(unitSphere.clone())
-  val clipper by QuadraticMat4(unitSlab.clone())  
+  val clipper by QuadraticMat4(unitSlab.clone())
+  val clipper2 by QuadraticMat4(zero.clone())
 
   companion object {
+    val zero = 
+      Mat4(
+        0.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 0.0f
+      )
     val unitSphere = 
       Mat4(
         1.0f, 0.0f, 0.0f, 0.0f,

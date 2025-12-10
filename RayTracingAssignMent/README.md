@@ -20,11 +20,17 @@
   - Stylized evergreen made of three clipped cones (foliage) with diffuse green color
   - Brown cylinder stem (trunk) with diffuse brown color
 
+- [x] Box of presents
+  - Two axis-aligned cuboids (Red and Blue) placed under the fir tree
+  - Implemented using orthogonal clipped slabs (intersection of 3 slab-pairs)
+
+- [x] Wooden floor
+  - Infinite plane (approximated by large sphere) of polished wood
+  - Diffuse reflection with procedural wood grain pattern (rings/lines)
+  - Ideal reflection (environment mapping mixture)
+  - Receives shadows from all objects
+
 - [ ] Scissored
-
-- [ ] Box of presents
-
-- [ ] Wooden floor
 
 - [ ] Lights
 

@@ -36,7 +36,7 @@ class Scene (
     gameObjects += GameObject(backgroundMesh)
   }
 
-  val quadrics = Array<Quadric>(24) { Quadric(it) }
+  val quadrics = Array<Quadric>(32) { Quadric(it) }
 
   init{
     // Light sphere (top right)
@@ -155,6 +155,80 @@ class Scene (
     quadrics[18].clipper.set(Quadric.unitClipper.clone())
     quadrics[18].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f).translate(Vec3(0.0f, -1.0f, 0.0f)))
     quadrics[18].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f).translate(Vec3(5.0f, 4.5f, 0.0f)))
+
+    // Wooden Floor (Huge sphere acting as a plane)
+    quadrics[19].surface.set(Quadric.unitSphere.clone())
+    quadrics[19].surface.transform(Mat4().set().scale(200.0f, 200.0f, 200.0f).translate(Vec3(0.0f, -205.0f, 0.0f)))
+    quadrics[19].clipper.set(Quadric.unitSlab.clone())
+    quadrics[19].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f))
+
+    // PRESENTS (Orthogonal Box Slabs)
+    // Red Box (indices 20-22)
+    val redBoxM = Mat4().scale(0.7f, 0.7f, 0.7f).translate(Vec3(3.5f, -4.3f, 1.5f))
+    
+    // Y-Slab (Top/Bottom)
+    quadrics[20].surface.set(Quadric.unitSlab.clone())
+    quadrics[20].surface.transform(redBoxM)
+    quadrics[20].clipper.set(Quadric.unitClipper.clone())
+    quadrics[20].clipper.transform(Mat4().rotate(1.5708f, Vec3(0.0f, 0.0f, 1.0f)))
+    quadrics[20].clipper.transform(redBoxM)
+    quadrics[20].clipper2.set(Quadric.unitClipper.clone())
+    quadrics[20].clipper2.transform(Mat4().rotate(1.5708f, Vec3(1.0f, 0.0f, 0.0f)))
+    quadrics[20].clipper2.transform(redBoxM)
+
+    // X-Slab (Left/Right)
+    quadrics[21].surface.set(Quadric.unitSlab.clone())
+    quadrics[21].surface.transform(Mat4().rotate(1.5708f, Vec3(0.0f, 0.0f, 1.0f)))
+    quadrics[21].surface.transform(redBoxM)
+    quadrics[21].clipper.set(Quadric.unitClipper.clone())
+    quadrics[21].clipper.transform(redBoxM)
+    quadrics[21].clipper2.set(Quadric.unitClipper.clone())
+    quadrics[21].clipper2.transform(Mat4().rotate(1.5708f, Vec3(1.0f, 0.0f, 0.0f)))
+    quadrics[21].clipper2.transform(redBoxM)
+
+    // Z-Slab (Front/Back)
+    quadrics[22].surface.set(Quadric.unitSlab.clone())
+    quadrics[22].surface.transform(Mat4().rotate(1.5708f, Vec3(1.0f, 0.0f, 0.0f)))
+    quadrics[22].surface.transform(redBoxM)
+    quadrics[22].clipper.set(Quadric.unitClipper.clone())
+    quadrics[22].clipper.transform(redBoxM)
+    quadrics[22].clipper2.set(Quadric.unitClipper.clone())
+    quadrics[22].clipper2.transform(Mat4().rotate(1.5708f, Vec3(0.0f, 0.0f, 1.0f)))
+    quadrics[22].clipper2.transform(redBoxM)
+
+
+    // Blue Box (indices 23-25)
+    val blueBoxM = Mat4().scale(0.9f, 0.5f, 0.9f).translate(Vec3(6.5f, -4.5f, -1.0f))
+
+    // Y-Slab
+    quadrics[23].surface.set(Quadric.unitSlab.clone())
+    quadrics[23].surface.transform(blueBoxM)
+    quadrics[23].clipper.set(Quadric.unitClipper.clone())
+    quadrics[23].clipper.transform(Mat4().rotate(1.5708f, Vec3(0.0f, 0.0f, 1.0f)))
+    quadrics[23].clipper.transform(blueBoxM)
+    quadrics[23].clipper2.set(Quadric.unitClipper.clone())
+    quadrics[23].clipper2.transform(Mat4().rotate(1.5708f, Vec3(1.0f, 0.0f, 0.0f)))
+    quadrics[23].clipper2.transform(blueBoxM)
+
+    // X-Slab
+    quadrics[24].surface.set(Quadric.unitSlab.clone())
+    quadrics[24].surface.transform(Mat4().rotate(1.5708f, Vec3(0.0f, 0.0f, 1.0f)))
+    quadrics[24].surface.transform(blueBoxM)
+    quadrics[24].clipper.set(Quadric.unitClipper.clone())
+    quadrics[24].clipper.transform(blueBoxM)
+    quadrics[24].clipper2.set(Quadric.unitClipper.clone())
+    quadrics[24].clipper2.transform(Mat4().rotate(1.5708f, Vec3(1.0f, 0.0f, 0.0f)))
+    quadrics[24].clipper2.transform(blueBoxM)
+
+    // Z-Slab
+    quadrics[25].surface.set(Quadric.unitSlab.clone())
+    quadrics[25].surface.transform(Mat4().rotate(1.5708f, Vec3(1.0f, 0.0f, 0.0f)))
+    quadrics[25].surface.transform(blueBoxM)
+    quadrics[25].clipper.set(Quadric.unitClipper.clone())
+    quadrics[25].clipper.transform(blueBoxM)
+    quadrics[25].clipper2.set(Quadric.unitClipper.clone())
+    quadrics[25].clipper2.transform(Mat4().rotate(1.5708f, Vec3(0.0f, 0.0f, 1.0f)))
+    quadrics[25].clipper2.transform(blueBoxM)
   }
 
   val camera = PerspectiveCamera(*Program.all).apply{
