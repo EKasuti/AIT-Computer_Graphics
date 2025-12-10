@@ -306,6 +306,22 @@ class Scene (
       GL.SRC_ALPHA,
       GL.ONE_MINUS_SRC_ALPHA)
 
+    // ANIMATION: Swaying Golden Bells
+    val swayAngle = sin(t * 3.0f) * 0.3f // Swing back and forth
+    
+    // Bell 1 - Sway around Z axis
+    quadrics[13].surface.set(Quadric.unitSphere.clone())
+    quadrics[13].surface.transform(Mat4().set().scale(0.8f, 0.8f, 0.8f).translate(Vec3(0.0f, -0.8f, 0.0f)).rotate(swayAngle, Vec3(0.0f, 0.0f, 1.0f)).translate(Vec3(2.0f, -3.2f, 2.0f)))
+    quadrics[13].clipper.set(Quadric.unitSlab.clone())
+    quadrics[13].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f))
+
+    // Bell 2 - Sway with offset phase
+    val swayAngle2 = sin(t * 3.0f + 1.0f) * 0.3f
+    quadrics[14].surface.set(Quadric.unitSphere.clone())
+    quadrics[14].surface.transform(Mat4().set().scale(0.8f, 0.8f, 0.8f).translate(Vec3(0.0f, -0.8f, 0.0f)).rotate(swayAngle2, Vec3(0.0f, 0.0f, 1.0f)).translate(Vec3(3.0f, -2.2f, 0.0f)))
+    quadrics[14].clipper.set(Quadric.unitSlab.clone())
+    quadrics[14].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f))
+
     for (gameObject in gameObjects) {
       gameObject.move(dt, t, keysPressed, gameObjects)
       gameObject.update()

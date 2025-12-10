@@ -42,7 +42,8 @@
   - Three paraboloids hanging down above the tree
   - Refractive (transparent) material with slight blue tint
 
-- [ ] Animation
+- [x] Animation
+  - Golden bells sway back and forth in the wind
 
 - [ ] Scissored
 
