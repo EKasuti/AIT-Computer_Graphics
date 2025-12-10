@@ -267,6 +267,33 @@ void main(void) {
         return;
     }
 
+    // Candle (Wax + Flame)
+    if (bestI == 29 || bestI == 30) {
+        // Wax
+        if (bestI == 29) {
+            vec4 hit = e + d * bestT;
+            vec3 normal = normalize((hit * quadrics[bestI].surface + quadrics[bestI].surface * hit).xyz);
+            if (dot(normal, -d.xyz) < 0.0) normal *= -1.0;
+            
+            vec3 waxColor = vec3(0.9, 0.8, 0.8);
+            
+            // Diffuse from all 3 lights
+            float diffuse = 0.0;
+            for(int l=0; l<3; l++) {
+                vec3 toLight = normalize(lightPositions[l] - hit.xyz);
+                float shadow = computeShadow(hit.xyz, normal, lightPositions[l]);
+                diffuse += max(dot(normal, toLight), 0.0) * shadow; 
+            }
+            fragmentColor = vec4(waxColor * (0.2 + diffuse * 0.6), 1.0);
+            return;
+        }
+        // Flame
+        if (bestI == 30) {
+            fragmentColor = vec4(1.0, 0.8, 0.2, 1.0); // Bright Yellow
+            return;
+        }
+    }
+
 		float t = bestT;
 		mat4 A = quadrics[bestI].surface;
 		vec4 hit = e + d * t;

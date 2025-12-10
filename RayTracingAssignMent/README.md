@@ -34,7 +34,13 @@
 
 - [ ] Lights
 
-- [ ] Candle
+- [x] Candle
+  - Wax cylinder and Flame sphere
+  - Added 3rd light source (local point light) at flame position
+  
+- [x] Lights
+  - 3 point lights (Top-Right, Bottom-Right, Candle-Flame)
+  - Integrated into shader for diffuse and shadow calculations
 
 - [ ] Animation
 

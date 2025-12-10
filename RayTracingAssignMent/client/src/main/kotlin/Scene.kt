@@ -29,6 +29,9 @@ class Scene (
     // Light source (bottom right)
     backgroundMaterial["lightPositions[1]"]?.set( Vec3(15.0f, 5.0f, 5.0f) )
     backgroundMaterial["lightColors[1]"]?.set( Vec3(1.0f, 1.0f, 1.0f) )
+    // Light source (Candle)
+    backgroundMaterial["lightPositions[2]"]?.set( Vec3(-2.0f, -2.8f, 4.0f) )
+    backgroundMaterial["lightColors[2]"]?.set( Vec3(1.0f, 0.6f, 0.2f) )
   }
   val gameObjects = ArrayList<GameObject>()
 
@@ -155,6 +158,19 @@ class Scene (
     quadrics[18].clipper.set(Quadric.unitClipper.clone())
     quadrics[18].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f).translate(Vec3(0.0f, -1.0f, 0.0f)))
     quadrics[18].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f).translate(Vec3(5.0f, 4.5f, 0.0f)))
+
+    // CANDLE (Wax + Flame)
+    // Wax (Cylinder) Index 29
+    quadrics[29].surface.set(Quadric.unitCylinder.clone())
+    quadrics[29].surface.transform(Mat4().scale(0.3f, 1.0f, 0.3f).translate(Vec3(-2.0f, -4.0f, 4.0f)))
+    quadrics[29].clipper.set(Quadric.unitClipper.clone())
+    quadrics[29].clipper.transform(Mat4().scale(1.0f, 1.0f, 1.0f).translate(Vec3(-2.0f, -4.0f, 4.0f)))
+
+    // Flame (Sphere) Index 30
+    quadrics[30].surface.set(Quadric.unitSphere.clone())
+    quadrics[30].surface.transform(Mat4().scale(0.15f, 0.25f, 0.15f).translate(Vec3(-2.0f, -2.8f, 4.0f)))
+    quadrics[30].clipper.set(Quadric.unitSlab.clone())
+    quadrics[30].clipper.transform(Mat4().scale(1.0f, 1.0f, 1.0f)) // No clipping needed really
 
     // Wooden Floor (Huge sphere acting as a plane)
     quadrics[19].surface.set(Quadric.unitSphere.clone())
