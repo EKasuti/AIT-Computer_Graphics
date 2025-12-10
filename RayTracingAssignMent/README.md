@@ -16,7 +16,9 @@
 - [x] A pile of oranges
   - Four orange diffuse spheres piled up
 
-- [ ] Fir
+- [x] Fir
+  - Stylized evergreen made of three clipped cones (foliage) with diffuse green color
+  - Brown cylinder stem (trunk) with diffuse brown color
 
 - [ ] Scissored
 

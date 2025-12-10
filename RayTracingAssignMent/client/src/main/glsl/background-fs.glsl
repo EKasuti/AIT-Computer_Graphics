@@ -16,7 +16,7 @@ uniform struct {
 uniform struct {
   mat4 surface;
   mat4 clipper;
-} quadrics[16];
+} quadrics[24];
 
 // Light sources for shadows
 uniform vec3 lightPositions[3];
@@ -102,6 +102,27 @@ vec4 renderGoldenBell(vec4 hit, vec3 normal, vec3 rayDir) {
 	return vec4(envColor * vec3(1.0, 0.84, 0.0), 1.0);
 }
 
+vec4 renderTreeTrunk(vec4 hit, vec3 normal) {
+	// Diffuse lighting from both lights
+	vec3 toLight1 = normalize(lightPositions[0] - hit.xyz);
+	vec3 toLight2 = normalize(lightPositions[1] - hit.xyz);
+	float diffuse = max(dot(normal, toLight1), 0.0) + max(dot(normal, toLight2), 0.0);
+
+	vec3 brownColor = vec3(0.4, 0.2, 0.1) * (0.3 + diffuse * 0.7);
+	return vec4(brownColor, 1.0);
+}
+
+vec4 renderTreeFoliage(vec4 hit, vec3 normal) {
+	// Diffuse lighting from both lights
+	vec3 toLight1 = normalize(lightPositions[0] - hit.xyz);
+	vec3 toLight2 = normalize(lightPositions[1] - hit.xyz);
+	float diffuse = max(dot(normal, toLight1), 0.0) + max(dot(normal, toLight2), 0.0);
+
+	vec3 greenColor = vec3(0.1, 0.5, 0.2) * (0.3 + diffuse * 0.7);
+	return vec4(greenColor, 1.0);
+}
+
+
 void main(void) {
 	vec4 e = vec4(camera.position, 1);
 	vec4 d = vec4(normalize(rayDir.xyz), 0);
@@ -122,7 +143,7 @@ void main(void) {
 	float bestT = 10000.0;
 	int bestI = 0;
 
-	for (int i = 0; i < 16; i++)
+	for (int i = 0; i < 24; i++)
 	{
 		float tLocal = intersectQuadric (e, d, quadrics[i].surface, quadrics[i].clipper);
 		if (tLocal < bestT && tLocal > 0.0)
@@ -185,6 +206,26 @@ void main(void) {
 			return;
 		}
 
+		// Fir Tree Trunk (Brown diffuse)
+		if (bestI == 15) {
+			vec4 hit = e + d * bestT;
+			vec3 normal = normalize((hit * quadrics[bestI].surface + quadrics[bestI].surface * hit).xyz);
+			if (dot(normal, -d.xyz) < 0.0) normal *= -1.0;
+
+			fragmentColor = renderTreeTrunk(hit, normal);
+			return;
+		}
+
+		// Fir Tree Foliage (Green diffuse cones)
+		if (bestI >= 16 && bestI <= 18) {
+			vec4 hit = e + d * bestT;
+			vec3 normal = normalize((hit * quadrics[bestI].surface + quadrics[bestI].surface * hit).xyz);
+			if (dot(normal, -d.xyz) < 0.0) normal *= -1.0;
+
+			fragmentColor = renderTreeFoliage(hit, normal);
+			return;
+		}
+
 		float t = bestT;
 		mat4 A = quadrics[bestI].surface;
 		vec4 hit = e + d * t;
@@ -203,7 +244,7 @@ void main(void) {
 		// Light 1 shadow check
 		vec3 toLight1 = lightPositions[0] - hit.xyz;
 		vec3 lightDir1 = normalize(toLight1);
-		for (int i = 0; i < 16; i++) {
+		for (int i = 0; i < 24; i++) {
 			float tShadow = intersectQuadric(
 				vec4(hit.xyz + normal * 0.001, 1.0),
 				vec4(lightDir1, 0.0),
@@ -216,7 +257,7 @@ void main(void) {
 		// Light 2 shadow check
 		vec3 toLight2 = lightPositions[1] - hit.xyz;
 		vec3 lightDir2 = normalize(toLight2);
-		for (int i = 0; i < 16; i++) {
+		for (int i = 0; i < 24; i++) {
 			float tShadow = intersectQuadric(
 				vec4(hit.xyz + normal * 0.001, 1.0),
 				vec4(lightDir2, 0.0),

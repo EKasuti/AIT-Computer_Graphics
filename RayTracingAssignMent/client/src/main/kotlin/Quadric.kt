@@ -30,8 +30,8 @@ class Quadric(i : Int) : UniformProvider("""quadrics[${i}]""") {
     val cone =
       Mat4(
         1.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, -1.0f, 0.0f,
+        0.0f, -1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
         0.0f, 0.0f, 0.0f, 0.0f
       )
     val zPlane =
@@ -40,6 +40,20 @@ class Quadric(i : Int) : UniformProvider("""quadrics[${i}]""") {
         0.0f, 0.0f, 0.0f, 0.0f,
         0.0f, 0.0f, 0.0f, -1.0f,
         0.0f, 0.0f, -1.0f, 0.0f
+      )
+    val unitCylinder =
+      Mat4(
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, -1.0f
+      )
+    val unitClipper = 
+      Mat4(
+        0.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, -1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f
       )
   }
 

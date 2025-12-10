@@ -36,7 +36,7 @@ class Scene (
     gameObjects += GameObject(backgroundMesh)
   }
 
-  val quadrics = Array<Quadric>(16) { Quadric(it) }
+  val quadrics = Array<Quadric>(24) { Quadric(it) }
 
   init{
     // Light sphere (top right)
@@ -127,6 +127,34 @@ class Scene (
     quadrics[14].surface.transform(Mat4().set().scale(0.8f, 0.8f, 0.8f).translate(Vec3(3.0f, -3.0f, 0.0f)))
     quadrics[14].clipper.set(Quadric.unitSlab.clone())
     quadrics[14].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f))
+
+    // FIR TREE
+    // Trunk (brown cylinder)
+    quadrics[15].surface.set(Quadric.unitCylinder.clone())
+    quadrics[15].surface.transform(Mat4().set().scale(0.5f, 5.0f, 0.5f).translate(Vec3(5.0f, -2.0f, 0.0f)))
+    quadrics[15].clipper.set(Quadric.unitClipper.clone())
+    quadrics[15].clipper.transform(Mat4().set().scale(1.0f, 5.0f, 1.0f).translate(Vec3(5.0f, -2.0f, 0.0f)))
+
+    // Bottom cone layer (largest)
+    quadrics[16].surface.set(Quadric.cone.clone())
+    quadrics[16].surface.transform(Mat4().set().scale(2.0f, 2.0f, 2.0f).translate(Vec3(5.0f, 1.5f, 0.0f)))
+    quadrics[16].clipper.set(Quadric.unitClipper.clone())
+    quadrics[16].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f).translate(Vec3(0.0f, -1.0f, 0.0f)))
+    quadrics[16].clipper.transform(Mat4().set().scale(2.0f, 2.0f, 2.0f).translate(Vec3(5.0f, 1.5f, 0.0f)))
+
+    // Middle cone layer
+    quadrics[17].surface.set(Quadric.cone.clone())
+    quadrics[17].surface.transform(Mat4().set().scale(1.5f, 1.5f, 1.5f).translate(Vec3(5.0f, 3.0f, 0.0f)))
+    quadrics[17].clipper.set(Quadric.unitClipper.clone())
+    quadrics[17].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f).translate(Vec3(0.0f, -1.0f, 0.0f)))
+    quadrics[17].clipper.transform(Mat4().set().scale(1.5f, 1.5f, 1.5f).translate(Vec3(5.0f, 3.0f, 0.0f)))
+
+    // Top cone layer (smallest)
+    quadrics[18].surface.set(Quadric.cone.clone())
+    quadrics[18].surface.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f).translate(Vec3(5.0f, 4.5f, 0.0f)))
+    quadrics[18].clipper.set(Quadric.unitClipper.clone())
+    quadrics[18].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f).translate(Vec3(0.0f, -1.0f, 0.0f)))
+    quadrics[18].clipper.transform(Mat4().set().scale(1.0f, 1.0f, 1.0f).translate(Vec3(5.0f, 4.5f, 0.0f)))
   }
 
   val camera = PerspectiveCamera(*Program.all).apply{
