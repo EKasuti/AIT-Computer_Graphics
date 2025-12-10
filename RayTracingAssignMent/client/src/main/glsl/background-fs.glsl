@@ -95,6 +95,20 @@ vec4 renderGoldenBell(vec4 hit, vec3 normal, vec3 rayDir) {
 	return vec4(envColor * vec3(1.0, 0.84, 0.0), 1.0);
 }
 
+vec4 renderIcicle(vec4 hit, vec3 normal, vec3 rayDir) {
+	float eta = 1.0 / 1.31; // Air to Ice
+	vec3 refractedDir = refract(normalize(rayDir), normal, eta);
+	
+	// Handle Total Internal Reflection (TIR)
+	if (length(refractedDir) < 0.001) {
+		refractedDir = reflect(normalize(rayDir), normal);
+	}
+	
+	vec3 envColor = texture(material.envTexture, refractedDir).rgb;
+	// Slight blue tint for ice
+	return vec4(envColor * vec3(0.9, 0.95, 1.0), 1.0);
+}
+
 vec4 renderTreeTrunk(vec4 hit, vec3 normal) {
 	// Diffuse lighting from both lights
 	vec3 toLight1 = normalize(lightPositions[0] - hit.xyz);
@@ -264,6 +278,16 @@ void main(void) {
 			float diffuse = max(dot(normal, toLight1), 0.0) + max(dot(normal, toLight2), 0.0);
 			
 			        fragmentColor = vec4(color * (0.3 + diffuse * 0.7), 1.0);
+        return;
+    }
+
+    // Icicles (Refractive)
+    if (bestI >= 26 && bestI <= 28) {
+        vec4 hit = e + d * bestT;
+        vec3 normal = normalize((hit * quadrics[bestI].surface + quadrics[bestI].surface * hit).xyz);
+        if (dot(normal, -d.xyz) < 0.0) normal *= -1.0;
+
+        fragmentColor = renderIcicle(hit, normal, d.xyz);
         return;
     }
 

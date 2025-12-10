@@ -40,7 +40,7 @@ class Scene (
   }
 
   val quadrics = Array<Quadric>(32) { Quadric(it) }
-
+  
   init{
     // Light sphere (top right)
     quadrics[0].surface.set(Quadric.unitSphere.clone())
@@ -245,6 +245,27 @@ class Scene (
     quadrics[25].clipper2.set(Quadric.unitClipper.clone())
     quadrics[25].clipper2.transform(Mat4().rotate(1.5708f, Vec3(0.0f, 0.0f, 1.0f)))
     quadrics[25].clipper2.transform(blueBoxM)
+
+    // ICICLES (Hovering above the tree)
+    val icicleY = 5.5f
+    
+    // Icicle 1
+    quadrics[26].surface.set(Quadric.paraboloid.clone())
+    quadrics[26].surface.transform(Mat4().scale(0.25f, 1.5f, 0.25f).translate(Vec3(4.2f, icicleY, 0.5f)))
+    quadrics[26].clipper.set(Quadric.unitClipper.clone())
+    quadrics[26].clipper.transform(Mat4().scale(0.25f, 1.5f, 0.25f).translate(Vec3(4.2f, icicleY, 0.5f)))
+
+    // Icicle 2
+    quadrics[27].surface.set(Quadric.paraboloid.clone())
+    quadrics[27].surface.transform(Mat4().scale(0.3f, 1.8f, 0.3f).translate(Vec3(5.0f, icicleY, -0.2f)))
+    quadrics[27].clipper.set(Quadric.unitClipper.clone())
+    quadrics[27].clipper.transform(Mat4().scale(0.3f, 1.8f, 0.3f).translate(Vec3(5.0f, icicleY, -0.2f)))
+
+    // Icicle 3
+    quadrics[28].surface.set(Quadric.paraboloid.clone())
+    quadrics[28].surface.transform(Mat4().scale(0.2f, 1.2f, 0.2f).translate(Vec3(5.8f, icicleY, 0.2f)))
+    quadrics[28].clipper.set(Quadric.unitClipper.clone())
+    quadrics[28].clipper.transform(Mat4().scale(0.2f, 1.2f, 0.2f).translate(Vec3(5.8f, icicleY, 0.2f)))
   }
 
   val camera = PerspectiveCamera(*Program.all).apply{
