@@ -1,4 +1,6 @@
 import org.w3c.dom.HTMLCanvasElement
+import org.w3c.dom.HTMLElement
+import kotlinx.browser.document
 import org.khronos.webgl.WebGLRenderingContext as GL //# GL# we need this for the constants declared ˙HUN˙ a constansok miatt kell
 import kotlin.js.Date
 import vision.gears.webglmath.UniformProvider
@@ -10,7 +12,8 @@ import kotlin.math.*
 import kotlin.random.Random
 
 class Scene (
-  val gl : WebGL2RenderingContext)  : UniformProvider("scene") {
+  val gl : WebGL2RenderingContext,
+  val overlay : org.w3c.dom.HTMLDivElement)  : UniformProvider("scene") {
 
   val time by Vec1()  // Scene time uniform for shaders
 
@@ -105,6 +108,61 @@ class Scene (
     cameraShakeIntensity = maxOf(cameraShakeIntensity, intensity)
   }
 
+  // Score and combo system
+  var score = 0
+  var comboCount = 0
+  var comboTimer = 0f
+  val comboTimeout = 3f  // Combo resets after 3 seconds
+
+  fun addScore(points: Int) {
+    val multiplier = 1 + comboCount
+    score += points * multiplier
+  }
+
+  fun addCombo() {
+    comboCount++
+    comboTimer = comboTimeout
+  }
+
+  fun resetCombo() {
+    comboCount = 0
+    comboTimer = 0f
+  }
+
+  // Health and lives system
+  var lives = 3
+  var health = 3
+  val maxHealth = 3
+  var invincibilityTimer = 0f
+  val invincibilityDuration = 2f
+
+  // Slow-motion effect
+  var slowMoTimer = 0f
+  val slowMoDuration = 0.5f
+  val slowMoFactor = 0.3f  // 30% speed
+
+  fun triggerSlowMo() {
+    slowMoTimer = slowMoDuration
+  }
+
+  fun takeDamage(amount: Int = 1) {
+    if (invincibilityTimer > 0f) return  // Invincible
+
+    health -= amount
+    invincibilityTimer = invincibilityDuration
+    addCameraShake(0.5f)
+
+    if (health <= 0) {
+      lives--
+      if (lives > 0) {
+        health = maxHealth  // Respawn with full health
+        console.log("Life lost! Lives remaining: $lives")
+      } else {
+        console.log("Game Over! Final Score: $score")
+      }
+    }
+  }
+
   val avatar = object : GameObject(fighterMesh) {
     val velocity = Vec3()
     var angularVelocity = 0f
@@ -178,13 +236,18 @@ class Scene (
         return false
       }
       
-      // Bullet 
+      // Bullet - Spread Shot (3 bullets)
       shootCooldown -= dt
-      if("SPACE" in keysPressed){
-        val bulletDirection = Vec3(cos(roll), sin(roll), 0f)
-        val bullet = BulletGameObject(bulletMesh, this, bulletDirection)
-        (gameObjects as ArrayList).add(bullet)
-        shootCooldown = 1.0f 
+      if("SPACE" in keysPressed && shootCooldown <= 0f){
+        // Shoot 3 bullets in a spread pattern
+        val spreadAngles = listOf(-0.15f, 0f, 0.15f)  // -8.6°, 0°, +8.6°
+        spreadAngles.forEach { angleOffset ->
+          val bulletAngle = roll + angleOffset
+          val bulletDirection = Vec3(cos(bulletAngle), sin(bulletAngle), 0f)
+          val bullet = BulletGameObject(bulletMesh, this, bulletDirection)
+          (gameObjects as ArrayList).add(bullet)
+        }
+        shootCooldown = 0.3f  // Faster shooting with spread
       }
       position += velocity * dt
       roll += angularVelocity * dt
@@ -244,7 +307,7 @@ class Scene (
     gameObjects += exhaustEmitter
 
     // Seeker enemy
-    val seeker = SeekerGameObject(seekerMesh, avatar).apply {
+    val seeker = SeekerGameObject(seekerMesh, avatar, { takeDamage() }).apply {
       position.set(10.0f, 0.0f, 0.0f)
       scale.set(0.8f, 0.8f, 1.0f)
     }
@@ -298,10 +361,17 @@ class Scene (
   @Suppress("UNUSED_PARAMETER")
   fun update(keysPressed : Set<String>) {
     val timeAtThisFrame = Date().getTime()
-    val dt = (timeAtThisFrame - timeAtLastFrame).toFloat() / 1000.0f
+    var dt = (timeAtThisFrame - timeAtLastFrame).toFloat() / 1000.0f
+    val realDt = dt  // Store real dt for slow-mo timer
     val t = (timeAtThisFrame - timeAtFirstFrame).toFloat() / 1000.0f
     time.set(t) // Set scene time uniform
     timeAtLastFrame = timeAtThisFrame
+
+    // Apply slow-motion effect
+    if (slowMoTimer > 0f) {
+      dt *= slowMoFactor
+      slowMoTimer -= realDt
+    }
 
     // Spawn seekers
     seekerSpawnTimer -= dt
@@ -349,13 +419,69 @@ class Scene (
         if (toAvatar.length() < 1.2f && !it.collected) {
           it.collected = true
           collectedDiamonds += it
-          console.log("Diamond collected! Total: ${collectedDiamonds.size}")
+          addScore(10)  // 10 points per diamond
+          console.log("Diamond collected! Total: ${collectedDiamonds.size}, Score: $score")
         }
       }
       if(!it.move(dt, t, keysPressed, gameObjects)){
         deathRow += it
       }
     }
+
+    // Check bullet-seeker collisions
+    val bulletsToRemove = ArrayList<BulletGameObject>()
+    val seekersToRemove = ArrayList<SeekerGameObject>()
+
+    gameObjects.filterIsInstance<BulletGameObject>().forEach { bullet ->
+      gameObjects.filterIsInstance<SeekerGameObject>().forEach { seeker ->
+        val diff = bullet.position - seeker.position
+        if (diff.length() < 1.5f) {
+          bulletsToRemove += bullet
+          seekersToRemove += seeker
+        }
+      }
+    }
+
+    // Remove hit bullets and seekers, award score/combo
+    bulletsToRemove.forEach {
+      deathRow += it
+    }
+    seekersToRemove.forEach { seeker ->
+      deathRow += seeker
+      addScore(100) // 100 points per seeker kill
+      addCombo() // Increase combo
+      triggerSlowMo() // Dramatic slow-motion effect
+      console.log("Seeker killed! Score: $score, Combo: ${comboCount}x")
+
+      // Create explosion at seeker position
+      val explosion = ExplosionGameObject(explosionMesh).apply {
+        position.set(seeker.position)
+        scale.set(2.5f, 2.5f, 1.0f)
+      }
+      (gameObjects as ArrayList).add(explosion)
+      addCameraShake(0.2f)
+    }
+
+    // Update combo timer
+    if (comboCount > 0) {
+      comboTimer -= dt
+      if (comboTimer <= 0f) {
+        resetCombo()
+        console.log("Combo reset")
+      }
+    }
+
+    // Update invincibility timer
+    if (invincibilityTimer > 0f) {
+      invincibilityTimer -= dt
+      // Flash avatar when invincible (toggle visibility)
+      val flashRate = 0.1f
+      val shouldShow = ((invincibilityTimer / flashRate).toInt() % 2) == 0
+      avatar.scale.set(if (shouldShow) 1f else 0.8f, if (shouldShow) 1f else 0.8f, 1f)
+    } else {
+      avatar.scale.set(1f, 1f, 1f)
+    }
+
     deathRow.forEach{
       gameObjects -= it
     }
@@ -426,18 +552,34 @@ class Scene (
       displayDiamond.update()
       displayDiamond.draw(this, camera)
     }
+
+    // Update UI elements
+    (document.getElementById("score") as? HTMLElement)?.textContent = score.toString()
+    (document.getElementById("lives") as? HTMLElement)?.textContent = lives.toString()
+    (document.getElementById("health") as? HTMLElement)?.textContent = health.toString()
+    (document.getElementById("combo") as? HTMLElement)?.textContent = comboCount.toString()
+
+    // Show/hide combo display
+    val comboDisplay = document.getElementById("combo-display") as? HTMLElement
+    comboDisplay?.style?.display = if (comboCount > 0) "block" else "none"
+
+    // Show game over screen if out of lives
+    if (lives <= 0) {
+      (document.getElementById("final-score") as? HTMLElement)?.textContent = score.toString()
+      (document.getElementById("game-over") as? HTMLElement)?.style?.display = "block"
+    }
   }
 
   // Random spawn near the camera
   fun spawnSeeker() {
     val spawnX = camera.position.x + (-10..10).random().toFloat()
     val spawnY = camera.position.y + (-6..6).random().toFloat()
-  
-    val seeker = SeekerGameObject(seekerMesh, avatar).apply {
+
+    val seeker = SeekerGameObject(seekerMesh, avatar, { takeDamage() }).apply {
       position.set(spawnX, spawnY, 0f)
       scale.set(0.8f, 0.8f, 1.0f)
     }
-  
+
     gameObjects += seeker
   }
 

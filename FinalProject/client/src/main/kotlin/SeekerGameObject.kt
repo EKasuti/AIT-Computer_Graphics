@@ -3,7 +3,8 @@ import kotlin.math.*
 
 class SeekerGameObject(
   mesh: Mesh,
-  val target: GameObject
+  val target: GameObject,
+  val onCollision: () -> Unit = {}  // Callback when hitting avatar
 ) : GameObject(mesh) {
 
   private val velocity = Vec3()
@@ -51,6 +52,7 @@ class SeekerGameObject(
     // collision with avatar
     val diff = target.position - position
     if (diff.length() < 1.0f) {
+      onCollision()  // Trigger damage callback
       return false
     }
 

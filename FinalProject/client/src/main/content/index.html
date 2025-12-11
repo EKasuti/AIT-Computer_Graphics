@@ -10,7 +10,22 @@
 <body>
 	<div id="container"><!--#div# this tag defines a section of the page; it is an HTML element-->
 	  <canvas id="canvas"></canvas>
-	  <div id="overlay"></div><!--#overlay# We would like this HTML text; drawn above the canvas.; Modifying the markup text from code,; it is easy to print formatted text.-->
+	  <div id="overlay">
+	  	<!-- Game UI -->
+	  	<div id="score-display" style="position: absolute; top: 20px; left: 20px; color: white; font-family: monospace; font-size: 24px; text-shadow: 2px 2px 4px black;">
+	  		SCORE: <span id="score">0</span>
+	  	</div>
+	  	<div id="combo-display" style="position: absolute; top: 60px; left: 20px; color: #ffaa00; font-family: monospace; font-size: 20px; text-shadow: 2px 2px 4px black; display: none;">
+	  		COMBO: <span id="combo">0</span>x
+	  	</div>
+	  	<div id="health-display" style="position: absolute; top: 20px; right: 20px; color: #ff3333; font-family: monospace; font-size: 20px; text-shadow: 2px 2px 4px black;">
+	  		LIVES: <span id="lives">3</span> | HP: <span id="health">3</span>
+	  	</div>
+	  	<div id="game-over" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-family: monospace; font-size: 48px; text-shadow: 3px 3px 6px black; display: none;">
+	  		GAME OVER<br/>
+	  		<span style="font-size: 24px;">Final Score: <span id="final-score">0</span></span>
+	  	</div>
+	  </div>
 	</div>
 
     <script type="application/javascript" src="client.js"></script><!--#client.js# transpiled Javascript-->

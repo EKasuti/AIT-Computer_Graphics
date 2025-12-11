@@ -9,9 +9,9 @@ class App(val canvas : HTMLCanvasElement, val overlay : HTMLDivElement) {
 
   val keysPressed = HashSet<String>()
 
-  val gl = (canvas.getContext("webgl2", object{val alpha = false}) ?: throw Error("Browser does not support WebGL2")) as WebGL2RenderingContext //#alpha# never make canvas transparent ˙HUN˙ ne legyen áttetsző a vászon  
+  val gl = (canvas.getContext("webgl2", object{val alpha = false}) ?: throw Error("Browser does not support WebGL2")) as WebGL2RenderingContext //#alpha# never make canvas transparent ˙HUN˙ ne legyen áttetsző a vászon
 
-  val scene = Scene(gl)//#scene# this object is responsible for resource allocation and drawing ˙HUN˙ ez az objektum felel az erőforrások kezeléséért és kirajzolásáért
+  val scene = Scene(gl, overlay)//#scene# this object is responsible for resource allocation and drawing ˙HUN˙ ez az objektum felel az erőforrások kezeléséért és kirajzolásáért
   init {
     resize()//## we adjust render resolution in a separate method, as we will also need it when the canvas is resized ˙HUN˙ rajzolási felbontás beállítása külön metódusban, mert ablakátméretezéskor is kell majd ugyanez
   }
@@ -76,7 +76,6 @@ class App(val canvas : HTMLCanvasElement, val overlay : HTMLDivElement) {
 fun main() {
   val canvas = document.getElementById("canvas") as HTMLCanvasElement
   val overlay = document.getElementById("overlay") as HTMLDivElement
-  overlay.innerHTML = """<font color="red">WebGL</font>"""
 
   try{
     val app = App(canvas, overlay)//#app# from this point on,; this object is responsible; for handling everything

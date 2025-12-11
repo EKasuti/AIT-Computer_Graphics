@@ -26,6 +26,17 @@ class BulletGameObject(
 
     position += velocity * dt // move forward
 
+    // Check collision with seekers
+    gameObjects.forEach { obj ->
+      if (obj is SeekerGameObject) {
+        val diff = position - obj.position
+        if (diff.length() < 1.5f) {
+          // Hit a seeker - bullet should be destroyed
+          return false
+        }
+      }
+    }
+
     // decrease lifetime
     lifetime -= dt
     return lifetime > 0.0f
