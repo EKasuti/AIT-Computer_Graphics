@@ -12,10 +12,14 @@ import kotlin.random.Random
 class Scene (
   val gl : WebGL2RenderingContext)  : UniformProvider("scene") {
 
+  val time by Vec1()  // Scene time uniform for shaders
+
   val texturedQuadGeometry = TexturedQuadGeometry(gl)
   val vsTextured = Shader(gl, GL.VERTEX_SHADER, "textured-vs.glsl")
   val fsTextured = Shader(gl, GL.FRAGMENT_SHADER, "textured-fs.glsl")
-  val texturedProgram = Program(gl, vsTextured, fsTextured  )
+  val fsTexturedLit = Shader(gl, GL.FRAGMENT_SHADER, "textured-lit-fs.glsl")
+  val texturedProgram = Program(gl, vsTextured, fsTextured)
+  val texturedLitProgram = Program(gl, vsTextured, fsTexturedLit)
 
   val asteroidMaterial = Material(texturedProgram).apply{
     this["colorTexture"]?.set(Texture2D(gl, "media/asteroid.png"))
@@ -26,29 +30,39 @@ class Scene (
   val vsBackground = Shader(gl, GL.VERTEX_SHADER, "background-vs.glsl")  
   val backgroundProgram = Program(gl, vsBackground, fsTextured)
   
+  // Dynamic lighting arrays
+  val lightPositions = Array(8) { Vec3() }
+  val lightPowerDensities = Array(8) { Vec3() }
+  var numActiveLights = 0
+
   //TODO: create various materials with different solidColor settings
-  val fighterMaterial = Material(texturedProgram).apply{
+  val fighterMaterial = Material(texturedLitProgram).apply{
     this["colorTexture"]?.set(Texture2D(gl, "media/fighter.png"))
   }
   val backgroundMaterial = Material(backgroundProgram).apply{
     this["colorTexture"]?.set(Texture2D(gl, "media/nebula.jpg"))
   }
-  val explosionMaterial = Material(texturedProgram).apply {
+  val explosionMaterial = Material(texturedLitProgram).apply {
     this["colorTexture"]?.set(Texture2D(gl, "media/explosion.png"))
   }
-  val flameMaterial = Material(texturedProgram).apply {
+  val flameMaterial = Material(texturedLitProgram).apply {
     this["colorTexture"]?.set(Texture2D(gl, "media/flame.png"))
   }
-  val bulletMaterial = Material(texturedProgram).apply {
+  val bulletMaterial = Material(texturedLitProgram).apply {
     this["colorTexture"]?.set(Texture2D(gl, "media/bullet.png"))
   }
-  val seekerMaterial = Material(texturedProgram).apply {
+  val seekerMaterial = Material(texturedLitProgram).apply {
     this["colorTexture"]?.set(Texture2D(gl, "media/ufo.png"))
   }
-  val diamondMaterial = Material(texturedProgram).apply {
+  val diamondMaterial = Material(texturedLitProgram).apply {
     this["colorTexture"]?.set(Texture2D(gl, "media/diamond.png"))
   }
-  
+
+  // Particle materials (using flame texture for particles)
+  val particleMaterial = Material(texturedLitProgram).apply {
+    this["colorTexture"]?.set(Texture2D(gl, "media/flame.png"))
+  }
+
   val backgroundMesh = Mesh(backgroundMaterial, texturedQuadGeometry)
   val fighterMesh = Mesh(fighterMaterial, texturedQuadGeometry)
   val explosionMesh = Mesh(explosionMaterial, texturedQuadGeometry)
@@ -56,6 +70,7 @@ class Scene (
   val bulletMesh = Mesh(bulletMaterial, texturedQuadGeometry)
   val seekerMesh = Mesh(seekerMaterial, texturedQuadGeometry)
   val diamondMesh = Mesh(diamondMaterial, texturedQuadGeometry)
+  val particleMesh = Mesh(particleMaterial, texturedQuadGeometry)
 
   val camera = OrthoCamera().apply{
     position.set(1f, 1f)
@@ -70,6 +85,25 @@ class Scene (
   val seekerSpawnInterval = 5f
   // diamond collection
   val collectedDiamonds = mutableListOf<GameObject>()
+
+  // Particle emitter for avatar exhaust
+  val exhaustEmitter = ParticleEmitter(
+    mesh = particleMesh,
+    emissionRate = 50f,
+    particleLifetime = 0.6f,
+    particleColor = Vec3(1f, 0.6f, 0.2f), // Orange exhaust
+    spreadAngle = 0.8f,
+    initialSpeed = 4f
+  )
+
+  // Camera shake effect
+  var cameraShakeIntensity = 0f
+  val cameraShakeDecay = 5f
+  val cameraShakeOffset = Vec3()
+
+  fun addCameraShake(intensity: Float) {
+    cameraShakeIntensity = maxOf(cameraShakeIntensity, intensity)
+  }
 
   val avatar = object : GameObject(fighterMesh) {
     val velocity = Vec3()
@@ -108,6 +142,16 @@ class Scene (
               scale.set(2.5f, 2.5f, 1.0f)
             }
             (gameObjects as ArrayList).add(explosion)
+
+            // Emit explosion particles
+            exhaustEmitter.emitBurst(
+              count = 30,
+              position = Vec3(it.position),
+              direction = (position - it.position).apply { normalize() }
+            )
+
+            // Camera shake on collision
+            addCameraShake(0.3f)
             //return@move false
           }
         }
@@ -174,6 +218,15 @@ class Scene (
         it.isActive = thrusting
       }
 
+      // Control exhaust particles
+      gameObjects.filterIsInstance<ParticleEmitter>().forEach { emitter ->
+        // Position emitter at back of ship
+        val backOffset = Vec3(-cos(roll) * 2.5f, -sin(roll) * 2.5f, 0f)
+        emitter.position.set(position + backOffset)
+        emitter.emissionDirection.set(-cos(roll), -sin(roll), 0f)
+        emitter.isEmitting = thrusting
+      }
+
       return true
     }
   }
@@ -187,6 +240,8 @@ class Scene (
     val rightFlame = FlameGameObject(flameMesh, avatar, Vec3(-2.6f, 0.4f, -1.0f))
     gameObjects += leftFlame
     gameObjects += rightFlame
+    // Add exhaust particle emitter
+    gameObjects += exhaustEmitter
 
     // Seeker enemy
     val seeker = SeekerGameObject(seekerMesh, avatar).apply {
@@ -235,15 +290,17 @@ class Scene (
 
   val timeAtFirstFrame = Date().getTime()
   var timeAtLastFrame =  timeAtFirstFrame
-  //TODO: add property reflecting uniform scene.time
-  //TODO: add all programs as child components
+
+  init {
+    addComponentsAndGatherUniforms(texturedProgram, texturedLitProgram, backgroundProgram)
+  }
 
   @Suppress("UNUSED_PARAMETER")
   fun update(keysPressed : Set<String>) {
-    val timeAtThisFrame = Date().getTime() 
+    val timeAtThisFrame = Date().getTime()
     val dt = (timeAtThisFrame - timeAtLastFrame).toFloat() / 1000.0f
     val t = (timeAtThisFrame - timeAtFirstFrame).toFloat() / 1000.0f
-    //TODO: set property time (reflecting uniform scene.time) 
+    time.set(t) // Set scene time uniform
     timeAtLastFrame = timeAtThisFrame
 
     // Spawn seekers
@@ -257,7 +314,23 @@ class Scene (
     if (Random.nextFloat() < 0.02) {
       spawnDiamond()
     }
-    camera.position.set(avatar.position)
+
+    // Update camera shake
+    if (cameraShakeIntensity > 0f) {
+      cameraShakeOffset.set(
+        (Random.nextFloat() - 0.5f) * cameraShakeIntensity,
+        (Random.nextFloat() - 0.5f) * cameraShakeIntensity,
+        0f
+      )
+      cameraShakeIntensity -= cameraShakeDecay * dt
+      if (cameraShakeIntensity < 0f) {
+        cameraShakeIntensity = 0f
+        cameraShakeOffset.set(0f, 0f, 0f)
+      }
+    }
+
+    // Apply camera position with shake
+    camera.position.set(avatar.position + cameraShakeOffset)
     camera.updateViewProjMatrix()
 
     gl.clearColor(0.3f, 0.0f, 0.3f, 1.0f)//## red, green, blue, alpha in [0, 1]
@@ -289,8 +362,56 @@ class Scene (
     gameObjects.forEach{
       it.update()
     }
+
+    // Gather dynamic lights from game objects
+    numActiveLights = 0
+    gameObjects.forEach { obj ->
+      if (numActiveLights < 8) {
+        when (obj) {
+          is BulletGameObject -> {
+            lightPositions[numActiveLights].set(obj.position.x, obj.position.y, obj.position.z)
+            lightPowerDensities[numActiveLights].set(2.0f, 2.0f, 3.0f) // Bright white-blue
+            numActiveLights++
+          }
+          is ExplosionGameObject -> {
+            lightPositions[numActiveLights].set(obj.position.x, obj.position.y, obj.position.z)
+            lightPowerDensities[numActiveLights].set(8.0f, 4.0f, 1.0f) // Bright orange
+            numActiveLights++
+          }
+          is SeekerGameObject -> {
+            lightPositions[numActiveLights].set(obj.position.x, obj.position.y, obj.position.z)
+            lightPowerDensities[numActiveLights].set(3.0f, 0.3f, 0.3f) // Red menacing glow
+            numActiveLights++
+          }
+          is DiamondGameObject -> {
+            if (!obj.collected) {
+              lightPositions[numActiveLights].set(obj.position.x, obj.position.y, obj.position.z)
+              lightPowerDensities[numActiveLights].set(3.0f, 2.5f, 0.5f) // Golden glow
+              numActiveLights++
+            }
+          }
+        }
+      }
+    }
+
+    // Update lighting uniforms for the lit program
+    texturedLitProgram.gl.useProgram(texturedLitProgram.glProgram)
+    for (i in 0 until numActiveLights) {
+      val posLoc = gl.getUniformLocation(texturedLitProgram.glProgram, "lights.position[$i]")
+      gl.uniform4f(posLoc, lightPositions[i].x, lightPositions[i].y, lightPositions[i].z, 1.0f)
+
+      val powerLoc = gl.getUniformLocation(texturedLitProgram.glProgram, "lights.powerDensity[$i]")
+      gl.uniform3f(powerLoc, lightPowerDensities[i].x, lightPowerDensities[i].y, lightPowerDensities[i].z)
+    }
+    val numLightsLoc = gl.getUniformLocation(texturedLitProgram.glProgram, "lights.numLights")
+    gl.uniform1i(numLightsLoc, numActiveLights)
+
     gameObjects.forEach{
-      it.draw(this, camera)
+      if (it is ParticleEmitter) {
+        it.drawParticles(this, camera)
+      } else {
+        it.draw(this, camera)
+      }
     }
 
     val cornerX = camera.position.x + camera.windowSize.x / 2f - 1.0f

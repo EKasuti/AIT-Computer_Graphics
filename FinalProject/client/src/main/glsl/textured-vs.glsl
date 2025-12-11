@@ -27,8 +27,8 @@ out vec4 texCoord;
 
 void main(void) {
   modelPosition = vertexPosition;
-  gl_Position = vertexPosition * gameObject.modelMatrix * camera.viewProjMatrix;
-  worldPosition = gl_Position;
+  worldPosition = vertexPosition * gameObject.modelMatrix;  // World space position for lighting
+  gl_Position = worldPosition * camera.viewProjMatrix;
   texCoord = vertexTexCoord;
 //  texCoord = (vertexTexCoord + vec4(gameObject.textureOffset, 0, 0)) * vec4(material.textureScale, 1, 1);
 }
