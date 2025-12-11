@@ -1,0 +1,333 @@
+import org.w3c.dom.HTMLCanvasElement
+import org.khronos.webgl.WebGLRenderingContext as GL //# GL# we need this for the constants declared ˙HUN˙ a constansok miatt kell
+import kotlin.js.Date
+import vision.gears.webglmath.UniformProvider
+import vision.gears.webglmath.Vec1
+import vision.gears.webglmath.Vec2
+import vision.gears.webglmath.Vec3
+import vision.gears.webglmath.Mat4
+import kotlin.math.*
+import kotlin.random.Random
+
+class Scene (
+  val gl : WebGL2RenderingContext)  : UniformProvider("scene") {
+
+  val texturedQuadGeometry = TexturedQuadGeometry(gl)
+  val vsTextured = Shader(gl, GL.VERTEX_SHADER, "textured-vs.glsl")
+  val fsTextured = Shader(gl, GL.FRAGMENT_SHADER, "textured-fs.glsl")
+  val texturedProgram = Program(gl, vsTextured, fsTextured  )
+
+  val asteroidMaterial = Material(texturedProgram).apply{
+    this["colorTexture"]?.set(Texture2D(gl, "media/asteroid.png"))
+    this["textureScale"]?.set(1f/6f, 1f/6f)
+  }
+  val asteroidMesh = Mesh(asteroidMaterial, texturedQuadGeometry)
+
+  val vsBackground = Shader(gl, GL.VERTEX_SHADER, "background-vs.glsl")  
+  val backgroundProgram = Program(gl, vsBackground, fsTextured)
+  
+  //TODO: create various materials with different solidColor settings
+  val fighterMaterial = Material(texturedProgram).apply{
+    this["colorTexture"]?.set(Texture2D(gl, "media/fighter.png"))
+  }
+  val backgroundMaterial = Material(backgroundProgram).apply{
+    this["colorTexture"]?.set(Texture2D(gl, "media/nebula.jpg"))
+  }
+  val explosionMaterial = Material(texturedProgram).apply {
+    this["colorTexture"]?.set(Texture2D(gl, "media/explosion.png"))
+  }
+  val flameMaterial = Material(texturedProgram).apply {
+    this["colorTexture"]?.set(Texture2D(gl, "media/flame.png"))
+  }
+  val bulletMaterial = Material(texturedProgram).apply {
+    this["colorTexture"]?.set(Texture2D(gl, "media/bullet.png"))
+  }
+  val seekerMaterial = Material(texturedProgram).apply {
+    this["colorTexture"]?.set(Texture2D(gl, "media/ufo.png"))
+  }
+  val diamondMaterial = Material(texturedProgram).apply {
+    this["colorTexture"]?.set(Texture2D(gl, "media/diamond.png"))
+  }
+  
+  val backgroundMesh = Mesh(backgroundMaterial, texturedQuadGeometry)
+  val fighterMesh = Mesh(fighterMaterial, texturedQuadGeometry)
+  val explosionMesh = Mesh(explosionMaterial, texturedQuadGeometry)
+  val flameMesh = Mesh(flameMaterial, texturedQuadGeometry)
+  val bulletMesh = Mesh(bulletMaterial, texturedQuadGeometry)
+  val seekerMesh = Mesh(seekerMaterial, texturedQuadGeometry)
+  val diamondMesh = Mesh(diamondMaterial, texturedQuadGeometry)
+
+  val camera = OrthoCamera().apply{
+    position.set(1f, 1f)
+    windowSize.set(20f, 20f)
+    updateViewProjMatrix()
+  }
+
+  var gameObjects = ArrayList<GameObject>()
+  var flame: FlameGameObject? = null
+   // Seeker
+  var seekerSpawnTimer = 0f
+  val seekerSpawnInterval = 5f
+  // diamond collection
+  val collectedDiamonds = mutableListOf<GameObject>()
+
+  val avatar = object : GameObject(fighterMesh) {
+    val velocity = Vec3()
+    var angularVelocity = 0f
+    var shootCooldown = 0f
+
+    override fun move(
+      dt : Float,
+      t : Float,
+      keysPressed : Set<String>,
+      gameObjects : List<GameObject>
+    ) : Boolean {
+
+      // asteroid collision
+      gameObjects.forEach{
+        if(it == this){ 
+          return@forEach
+        }
+        if(it is AsteroidGameObject){
+          val diff = position - it.position
+          val dist = diff.length()
+          if(dist < 2.0f){
+            val relativeVelocity =
+              velocity - it.velocity
+            val normal = diff
+            normal.normalize()
+            position += normal * 0.01f
+            val relativeVelocityAlongNormal =
+              normal * relativeVelocity.dot(normal)
+            velocity -= relativeVelocityAlongNormal * 0.5f * 1.6f
+            it.velocity += relativeVelocityAlongNormal * 0.5f * 1.6f
+
+            // Explosion effect
+            val explosion = ExplosionGameObject(explosionMesh).apply {
+              position.set(it.position)
+              scale.set(2.5f, 2.5f, 1.0f)
+            }
+            (gameObjects as ArrayList).add(explosion)
+            //return@move false
+          }
+        }
+      }
+
+      var thrusting = false
+      if("W" in keysPressed){
+        val ahead = Vec3(cos(roll), sin(roll), 0f)
+        velocity += ahead * 10.0f * dt
+        thrusting = true
+      }
+      if("S" in keysPressed){
+        val backward = Vec3(-cos(roll), -sin(roll), 0f)
+        velocity += backward * 10.0f * dt
+        thrusting = false
+      }
+      if("D" in keysPressed){
+        angularVelocity -= 3.0f * dt       
+      }
+      if("A" in keysPressed){
+        angularVelocity += 3.0f * dt
+      }      
+      if("X" in keysPressed){
+        return false
+      }
+      
+      // Bullet 
+      shootCooldown -= dt
+      if("SPACE" in keysPressed){
+        val bulletDirection = Vec3(cos(roll), sin(roll), 0f)
+        val bullet = BulletGameObject(bulletMesh, this, bulletDirection)
+        (gameObjects as ArrayList).add(bullet)
+        shootCooldown = 1.0f 
+      }
+      position += velocity * dt
+      roll += angularVelocity * dt
+
+      velocity *= 0.98f.pow(dt)
+      angularVelocity *= 0.98f.pow(dt)
+
+      // Landing collision detection
+      gameObjects.forEach {
+        if (it is PlatformGameObject) {
+          val platformY = it.yLevel
+          val distanceToPlatform = position.y - platformY
+
+          if (distanceToPlatform < 1.0f) {
+            val penetration = 1.0f - distanceToPlatform
+            val springStrength = 20.0f
+
+            velocity.y += springStrength * penetration * dt
+
+            velocity.y *= 0.95f.pow(dt)
+
+            if (position.y < platformY + 1.0f) {
+              position.y = platformY + 1.0f
+            }
+          }
+        }
+      }
+
+      // Flame visibility
+      gameObjects.filterIsInstance<FlameGameObject>().forEach {
+        it.isActive = thrusting
+      }
+
+      return true
+    }
+  }
+  init {
+    gameObjects += GameObject(backgroundMesh)
+    gameObjects += avatar
+    avatar.roll = 1f
+
+    // Flames
+    val leftFlame = FlameGameObject(flameMesh, avatar, Vec3(-2.6f, -0.4f, -1.0f))
+    val rightFlame = FlameGameObject(flameMesh, avatar, Vec3(-2.6f, 0.4f, -1.0f))
+    gameObjects += leftFlame
+    gameObjects += rightFlame
+
+    // Seeker enemy
+    val seeker = SeekerGameObject(seekerMesh, avatar).apply {
+      position.set(10.0f, 0.0f, 0.0f)
+      scale.set(0.8f, 0.8f, 1.0f)
+    }
+    gameObjects += seeker
+
+    // Platform
+    val platformMaterial = Material(texturedProgram).apply {
+      this["colorTexture"]?.set(Texture2D(gl, "media/platform.png"))
+    }
+
+    val platformMesh = Mesh(platformMaterial, texturedQuadGeometry)
+    // Single platform
+    // val platform = PlatformGameObject(platformMesh, yLevel = -5.0f)
+    // gameObjects += platform
+
+    // Multiple platforms
+    for (i in -3..3) {
+      val platform = PlatformGameObject(platformMesh, yLevel = -9.0f).apply {
+        position.set(i * 6.0f, -9.0f, 0.0f)
+      }
+      gameObjects += platform
+    }
+
+    val asteroid1 = AsteroidGameObject(asteroidMesh).apply {
+      position.set(-5.0f, 0.0f, 0.0f)
+      scale.set(1.0f, 1.0f, 1.0f)
+      velocity.set(0.2f)
+    }
+  
+    val asteroid2 = AsteroidGameObject(asteroidMesh).apply {
+      position.set(5.0f, 5.0f, 0.0f)
+      velocity.set(-0.2f)
+    }
+  
+    gameObjects += asteroid1
+    gameObjects += asteroid2
+  }
+
+  fun resize(canvas : HTMLCanvasElement) {
+    gl.viewport(0, 0, canvas.width, canvas.height)//#viewport# tell the rasterizer which part of the canvas to draw to ˙HUN˙ a raszterizáló ide rajzoljon
+    camera.setAspectRatio(canvas.width.toFloat()/canvas.height)
+  }
+
+  val timeAtFirstFrame = Date().getTime()
+  var timeAtLastFrame =  timeAtFirstFrame
+  //TODO: add property reflecting uniform scene.time
+  //TODO: add all programs as child components
+
+  @Suppress("UNUSED_PARAMETER")
+  fun update(keysPressed : Set<String>) {
+    val timeAtThisFrame = Date().getTime() 
+    val dt = (timeAtThisFrame - timeAtLastFrame).toFloat() / 1000.0f
+    val t = (timeAtThisFrame - timeAtFirstFrame).toFloat() / 1000.0f
+    //TODO: set property time (reflecting uniform scene.time) 
+    timeAtLastFrame = timeAtThisFrame
+
+    // Spawn seekers
+    seekerSpawnTimer -= dt
+    if (seekerSpawnTimer <= 0f) {
+      spawnSeeker()
+      seekerSpawnTimer = seekerSpawnInterval
+    }
+
+    // Spawn diamonds
+    if (Random.nextFloat() < 0.02) {
+      spawnDiamond()
+    }
+    camera.position.set(avatar.position)
+    camera.updateViewProjMatrix()
+
+    gl.clearColor(0.3f, 0.0f, 0.3f, 1.0f)//## red, green, blue, alpha in [0, 1]
+    gl.clearDepth(1.0f)//## will be useful in 3D ˙HUN˙ 3D-ben lesz hasznos
+    gl.clear(GL.COLOR_BUFFER_BIT or GL.DEPTH_BUFFER_BIT)//#or# bitwise OR of flags
+
+    gl.enable(GL.BLEND)
+    gl.blendFunc(
+      GL.SRC_ALPHA,
+      GL.ONE_MINUS_SRC_ALPHA)
+
+    val deathRow = ArrayList<GameObject>()
+    gameObjects.forEach{
+      if(it is DiamondGameObject) {
+        val toAvatar = avatar.position - it.position
+        if (toAvatar.length() < 1.2f && !it.collected) {
+          it.collected = true
+          collectedDiamonds += it
+          console.log("Diamond collected! Total: ${collectedDiamonds.size}")
+        }
+      }
+      if(!it.move(dt, t, keysPressed, gameObjects)){
+        deathRow += it
+      }
+    }
+    deathRow.forEach{
+      gameObjects -= it
+    }
+    gameObjects.forEach{
+      it.update()
+    }
+    gameObjects.forEach{
+      it.draw(this, camera)
+    }
+
+    val cornerX = camera.position.x + camera.windowSize.x / 2f - 1.0f
+    val cornerY = camera.position.y + camera.windowSize.y / 2f - 1.0f
+
+    collectedDiamonds.forEachIndexed { i, _ ->
+      val displayDiamond = GameObject(diamondMesh).apply {
+        // we then offset each diamond by 1 unit to the left
+        position.set(cornerX - i * 1.0f, cornerY, 0f)
+        scale.set(0.5f, 0.5f, 1.0f)
+      }
+      displayDiamond.update()
+      displayDiamond.draw(this, camera)
+    }
+  }
+
+  // Random spawn near the camera
+  fun spawnSeeker() {
+    val spawnX = camera.position.x + (-10..10).random().toFloat()
+    val spawnY = camera.position.y + (-6..6).random().toFloat()
+  
+    val seeker = SeekerGameObject(seekerMesh, avatar).apply {
+      position.set(spawnX, spawnY, 0f)
+      scale.set(0.8f, 0.8f, 1.0f)
+    }
+  
+    gameObjects += seeker
+  }
+
+  // Random spawn of diamond above the avatar
+  fun spawnDiamond() {
+    val spawnX = avatar.position.x + (-8..8).random().toFloat()
+    val spawnY = avatar.position.y + (8..12).random().toFloat()
+    val diamond = DiamondGameObject(diamondMesh, avatar).apply {
+      position.set(spawnX, spawnY, 0f)
+      scale.set(0.5f, 0.5f, 1.0f)
+    }
+    gameObjects += diamond
+  }
+}
